@@ -13,7 +13,9 @@
 #define ptm(__x__) (__x__/PTM_RATIO)
 
 @interface HelloWorldLayer : CCLayer {
-    NSMutableArray *_blockArray;
+    NSMutableArray *_topBlockArray;
+    NSMutableArray *_rightBlockArray;
+    NSMutableArray *_leftBlockArray;
     b2World *_world;
     b2Body *_body;
     CCSprite *_block;

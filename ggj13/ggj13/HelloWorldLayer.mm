@@ -39,18 +39,21 @@
         // wall definitions
         groundEdge.Set(b2Vec2(0,0), b2Vec2(winSize.width/PTM_RATIO, 0));
         groundBody->CreateFixture(&boxShapeDef);
-        [self addBlocks];
+        [self addTopBlocks];
+        [self addLeftBlocks];
+        [self addRightBlocks];
+        [self randomBlockDrop:_topBlockArray];
         [self schedule:@selector(tick:)];
     }
     return self;
 }
-- (void)addBlocks {
+- (void)addTopBlocks {
     CGSize winSize = [CCDirector sharedDirector].winSize;
     CCSprite *tempSprite = [CCSprite spriteWithFile:@"block_base.png"];
     int imageWidth = tempSprite.contentSize.width;
     int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width / imageWidth;
-    _blockArray = [NSMutableArray arrayWithCapacity:numBlocks];
+    _topBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
     for (int i = 0; i < numBlocks; i++) {
         _body = nil;
         _block = nil;
@@ -58,7 +61,39 @@
         _block.position = CGPointMake(_block.contentSize.width * i+_block.contentSize.width * 0.5f, winSize.height - _block.contentSize.height/2);
         // create block body and shape
         b2BodyDef blockBodyDef;
-        blockBodyDef.type = b2_dynamicBody;
+        blockBodyDef.type = b2_staticBody;
+        blockBodyDef.position.Set(_block.position.x/PTM_RATIO, _block.position.y/PTM_RATIO);
+        blockBodyDef.userData = _block;
+        _body = _world->CreateBody(&blockBodyDef);
+        _block.userData = _body;
+        // modified for box shape instead of circle (from Ray Wenderlich's tutorial series)
+        b2PolygonShape box;
+        box.SetAsBox(16/PTM_RATIO, 16/PTM_RATIO);
+        b2FixtureDef blockShapeDef;
+        blockShapeDef.shape = &box;
+        blockShapeDef.density = 1.0f;
+        blockShapeDef.friction = 0.2f;
+        blockShapeDef.restitution = 0;
+        _body->CreateFixture(&blockShapeDef);
+        [_topBlockArray addObject:_block];
+        [self addChild:_block];
+    }
+}
+- (void)addLeftBlocks {
+    CGSize winSize = [CCDirector sharedDirector].winSize;
+    CCSprite *tempSprite = [CCSprite spriteWithFile:@"block_base.png"];
+    int imageWidth = tempSprite.contentSize.width;
+    int imageHeight = tempSprite.contentSize.height;
+    int numBlocks = winSize.width / imageWidth;
+    _leftBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
+    for (int i = 0; i < numBlocks; i++) {
+        _body = nil;
+        _block = nil;
+        _block = [CCSprite spriteWithFile:@"block_base.png"];
+        _block.position = CGPointMake(imageWidth/2, (winSize.height - _block.contentSize.height - (_block.contentSize.height * i+_block.contentSize.height * 0.5f)));
+        // create block body and shape
+        b2BodyDef blockBodyDef;
+        blockBodyDef.type = b2_staticBody;
         blockBodyDef.position.Set(_block.position.x/PTM_RATIO, _block.position.y/PTM_RATIO);
         blockBodyDef.userData = _block;
         _body = _world->CreateBody(&blockBodyDef);
@@ -72,6 +107,54 @@
         blockShapeDef.restitution = 0;
         _body->CreateFixture(&blockShapeDef);
         [self addChild:_block];
+    }
+}
+- (void)addRightBlocks {
+    CGSize winSize = [CCDirector sharedDirector].winSize;
+    CCSprite *tempSprite = [CCSprite spriteWithFile:@"block_base.png"];
+    int imageWidth = tempSprite.contentSize.width;
+    int imageHeight = tempSprite.contentSize.height;
+    int numBlocks = winSize.width/ imageWidth;
+    _rightBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
+    for (int i = 0; i < numBlocks; i++) {
+        _body = nil;
+        _block = nil;
+        _block = [CCSprite spriteWithFile:@"block_base.png"];
+        _block.position = CGPointMake(winSize.width - imageWidth/2, (winSize.height - _block.contentSize.height - (_block.contentSize.height * i+_block.contentSize.height * 0.5f)));
+        // create block body and shape
+        b2BodyDef blockBodyDef;
+        blockBodyDef.type = b2_staticBody;
+        blockBodyDef.position.Set(_block.position.x/PTM_RATIO, _block.position.y/PTM_RATIO);
+        blockBodyDef.userData = _block;
+        _body = _world->CreateBody(&blockBodyDef);
+        // modified for box shape instead of circle (from Ray Wenderlich's tutorial series)
+        b2PolygonShape box;
+        box.SetAsBox(16/PTM_RATIO, 16/PTM_RATIO);
+        b2FixtureDef blockShapeDef;
+        blockShapeDef.shape = &box;
+        blockShapeDef.density = 1.0f;
+        blockShapeDef.friction = 0.2f;
+        blockShapeDef.restitution = 0;
+        _body->CreateFixture(&blockShapeDef);
+        [self addChild:_block];
+    }
+}
+
+- (void)randomBlockDrop:(NSMutableArray *)blockArray {
+    int numItems = blockArray.count;
+    int randIndex = arc4random() % 10;
+    CCSprite *block = [CCSprite spriteWithFile:@"block_base.png"];
+    for (int i = 0; i < numItems; i++) {
+        // holy shit, pissssss
+        if (i == randIndex) {
+            block = [blockArray objectAtIndex:i];
+            b2Body* body = (b2Body *)block.userData;
+            if (body != nil)
+            {
+                CCLOG(@"Found body at index %i", randIndex);
+                body->SetType(b2_dynamicBody);
+            }
+        }
     }
 }
 - (void)tick:(ccTime)dt {
