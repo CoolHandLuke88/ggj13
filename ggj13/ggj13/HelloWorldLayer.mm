@@ -6,295 +6,98 @@
 //  Copyright __MyCompanyName__ 2013. All rights reserved.
 //
 
-// Import the interfaces
 #import "HelloWorldLayer.h"
-
-// Needed to obtain the Navigation Controller
-#import "AppDelegate.h"
-
-#import "PhysicsSprite.h"
-
-enum {
-	kTagParentNode = 1,
-};
-
-
-#pragma mark - HelloWorldLayer
-
-@interface HelloWorldLayer()
--(void) initPhysics;
--(void) addNewSpriteAtPosition:(CGPoint)p;
--(void) createMenu;
-@end
-
 @implementation HelloWorldLayer
-
-+(CCScene *) scene
-{
-	// 'scene' is an autorelease object.
-	CCScene *scene = [CCScene node];
-	
-	// 'layer' is an autorelease object.
-	HelloWorldLayer *layer = [HelloWorldLayer node];
-	
-	// add layer as a child to scene
-	[scene addChild: layer];
-	
-	// return the scene
-	return scene;
++ (id)scene {
+    CCScene *scene = [CCScene node];
+    HelloWorldLayer *layer = [HelloWorldLayer node];
+    [scene addChild:layer];
+    return scene;
 }
-
--(id) init
-{
-	if( (self=[super init])) {
-		
-		// enable events
-		
-		self.isTouchEnabled = YES;
-		self.isAccelerometerEnabled = YES;
-		CGSize s = [CCDirector sharedDirector].winSize;
-		
-		// init physics
-		[self initPhysics];
-		
-		// create reset button
-		[self createMenu];
-		
-		//Set up sprite
-		
-#if 1
-		// Use batch node. Faster
-		CCSpriteBatchNode *parent = [CCSpriteBatchNode batchNodeWithFile:@"blocks.png" capacity:100];
-		spriteTexture_ = [parent texture];
-#else
-		// doesn't use batch node. Slower
-		spriteTexture_ = [[CCTextureCache sharedTextureCache] addImage:@"blocks.png"];
-		CCNode *parent = [CCNode node];
-#endif
-		[self addChild:parent z:0 tag:kTagParentNode];
-		
-		
-		[self addNewSpriteAtPosition:ccp(s.width/2, s.height/2)];
-		
-		CCLabelTTF *label = [CCLabelTTF labelWithString:@"Tap screen" fontName:@"Marker Felt" fontSize:32];
-		[self addChild:label z:0];
-		[label setColor:ccc3(0,0,255)];
-		label.position = ccp( s.width/2, s.height-50);
-		
-		[self scheduleUpdate];
-	}
-	return self;
+- (id)init {
+    self = [super init];
+    if (self) {
+        // enable touch
+        self.isTouchEnabled = YES;
+        CGSize winSize = [CCDirector sharedDirector].winSize;
+        // create sprite and add it to the layer
+//        _block = [CCSprite spriteWithFile:@"block_base.png"];
+//        _block.position = ccp(100, 300);
+        // create a world
+        b2Vec2 gravity = b2Vec2(0.0f, -8.0f);
+        _world = new b2World(gravity);
+        // create edges around the entire screen
+        b2BodyDef groundBodyDef;
+        groundBodyDef.position.Set(0, 0);
+        b2Body *groundBody = _world->CreateBody(&groundBodyDef);
+        b2EdgeShape groundEdge;
+        b2FixtureDef boxShapeDef;
+        boxShapeDef.shape = &groundEdge;
+        // wall definitions
+        groundEdge.Set(b2Vec2(0,0), b2Vec2(winSize.width/PTM_RATIO, 0));
+        groundBody->CreateFixture(&boxShapeDef);
+        [self addBlocks];
+        [self schedule:@selector(tick:)];
+    }
+    return self;
 }
-
--(void) dealloc
-{
-	delete world;
-	world = NULL;
-	
-	delete m_debugDraw;
-	m_debugDraw = NULL;
-	
-	[super dealloc];
-}	
-
--(void) createMenu
-{
-	// Default font size will be 22 points.
-	[CCMenuItemFont setFontSize:22];
-	
-	// Reset Button
-	CCMenuItemLabel *reset = [CCMenuItemFont itemWithString:@"Reset" block:^(id sender){
-		[[CCDirector sharedDirector] replaceScene: [HelloWorldLayer scene]];
-	}];
-	
-	// Achievement Menu Item using blocks
-	CCMenuItem *itemAchievement = [CCMenuItemFont itemWithString:@"Achievements" block:^(id sender) {
-		
-		
-		GKAchievementViewController *achivementViewController = [[GKAchievementViewController alloc] init];
-		achivementViewController.achievementDelegate = self;
-		
-		AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
-		
-		[[app navController] presentModalViewController:achivementViewController animated:YES];
-		
-		[achivementViewController release];
-	}];
-	
-	// Leaderboard Menu Item using blocks
-	CCMenuItem *itemLeaderboard = [CCMenuItemFont itemWithString:@"Leaderboard" block:^(id sender) {
-		
-		
-		GKLeaderboardViewController *leaderboardViewController = [[GKLeaderboardViewController alloc] init];
-		leaderboardViewController.leaderboardDelegate = self;
-		
-		AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
-		
-		[[app navController] presentModalViewController:leaderboardViewController animated:YES];
-		
-		[leaderboardViewController release];
-	}];
-	
-	CCMenu *menu = [CCMenu menuWithItems:itemAchievement, itemLeaderboard, reset, nil];
-	
-	[menu alignItemsVertically];
-	
-	CGSize size = [[CCDirector sharedDirector] winSize];
-	[menu setPosition:ccp( size.width/2, size.height/2)];
-	
-	
-	[self addChild: menu z:-1];	
+- (void)addBlocks {
+    CGSize winSize = [CCDirector sharedDirector].winSize;
+    CCSprite *tempSprite = [CCSprite spriteWithFile:@"block_base.png"];
+    int imageWidth = tempSprite.contentSize.width;
+    int imageHeight = tempSprite.contentSize.height;
+    int numBlocks = winSize.width / imageWidth;
+    _blockArray = [NSMutableArray arrayWithCapacity:numBlocks];
+    for (int i = 0; i < numBlocks; i++) {
+        _body = nil;
+        _block = nil;
+        _block = [CCSprite spriteWithFile:@"block_base.png"];
+        _block.position = CGPointMake(_block.contentSize.width * i+_block.contentSize.width * 0.5f, winSize.height - _block.contentSize.height/2);
+        // create block body and shape
+        b2BodyDef blockBodyDef;
+        blockBodyDef.type = b2_staticBody;
+        blockBodyDef.position.Set(_block.position.x/PTM_RATIO, _block.position.y/PTM_RATIO);
+        blockBodyDef.userData = _block;
+        _body = _world->CreateBody(&blockBodyDef);
+        // modified for box shape instead of circle (from Ray Wenderlich's tutorial series)
+        b2PolygonShape box;
+        box.SetAsBox(16/PTM_RATIO, 16/PTM_RATIO);
+        b2FixtureDef blockShapeDef;
+        blockShapeDef.shape = &box;
+        blockShapeDef.density = 1.0f;
+        blockShapeDef.friction = 0.2f;
+        blockShapeDef.restitution = 0;
+        _body->CreateFixture(&blockShapeDef);
+        [self addChild:_block];
+    }
 }
-
--(void) initPhysics
-{
-	
-	CGSize s = [[CCDirector sharedDirector] winSize];
-	
-	b2Vec2 gravity;
-	gravity.Set(0.0f, -10.0f);
-	world = new b2World(gravity);
-	
-	
-	// Do we want to let bodies sleep?
-	world->SetAllowSleeping(true);
-	
-	world->SetContinuousPhysics(true);
-	
-	m_debugDraw = new GLESDebugDraw( PTM_RATIO );
-	world->SetDebugDraw(m_debugDraw);
-	
-	uint32 flags = 0;
-	flags += b2Draw::e_shapeBit;
-	//		flags += b2Draw::e_jointBit;
-	//		flags += b2Draw::e_aabbBit;
-	//		flags += b2Draw::e_pairBit;
-	//		flags += b2Draw::e_centerOfMassBit;
-	m_debugDraw->SetFlags(flags);		
-	
-	
-	// Define the ground body.
-	b2BodyDef groundBodyDef;
-	groundBodyDef.position.Set(0, 0); // bottom-left corner
-	
-	// Call the body factory which allocates memory for the ground body
-	// from a pool and creates the ground box shape (also from a pool).
-	// The body is also added to the world.
-	b2Body* groundBody = world->CreateBody(&groundBodyDef);
-	
-	// Define the ground box shape.
-	b2EdgeShape groundBox;		
-	
-	// bottom
-	
-	groundBox.Set(b2Vec2(0,0), b2Vec2(s.width/PTM_RATIO,0));
-	groundBody->CreateFixture(&groundBox,0);
-	
-	// top
-	groundBox.Set(b2Vec2(0,s.height/PTM_RATIO), b2Vec2(s.width/PTM_RATIO,s.height/PTM_RATIO));
-	groundBody->CreateFixture(&groundBox,0);
-	
-	// left
-	groundBox.Set(b2Vec2(0,s.height/PTM_RATIO), b2Vec2(0,0));
-	groundBody->CreateFixture(&groundBox,0);
-	
-	// right
-	groundBox.Set(b2Vec2(s.width/PTM_RATIO,s.height/PTM_RATIO), b2Vec2(s.width/PTM_RATIO,0));
-	groundBody->CreateFixture(&groundBox,0);
+- (void)tick:(ccTime)dt {
+    _world->Step(dt, 10, 10);
+    for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
+        if (b->GetUserData() != NULL) {
+            CCSprite *blockData = (CCSprite *)b->GetUserData();
+            blockData.position = ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO);
+            blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
+        }
+    }
 }
-
--(void) draw
-{
-	//
-	// IMPORTANT:
-	// This is only for debug purposes
-	// It is recommend to disable it
-	//
-	[super draw];
-	
-	ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
-	
-	kmGLPushMatrix();
-	
-	world->DrawDebugData();	
-	
-	kmGLPopMatrix();
+- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+    // switch bodydef to dynamic and back
+    /*
+    CCLOG(@"Touch!!");
+    for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
+        if (b->GetType() == b2_dynamicBody) {
+            CCLOG(@"Bodies dynamic, going static...");
+            b->SetType(b2_staticBody);
+        } else {
+            CCLOG(@"Bodies static, going dynamic...");
+            b->SetType(b2_dynamicBody);
+        }
+    }
+    */
+    // apply random force
+    float rand = CCRANDOM_0_1() * 50;
+    b2Vec2 force = b2Vec2(0, rand);
+    _body->ApplyLinearImpulse(force, _body->GetPosition());
 }
-
--(void) addNewSpriteAtPosition:(CGPoint)p
-{
-	CCLOG(@"Add sprite %0.2f x %02.f",p.x,p.y);
-	CCNode *parent = [self getChildByTag:kTagParentNode];
-	
-	//We have a 64x64 sprite sheet with 4 different 32x32 images.  The following code is
-	//just randomly picking one of the images
-	int idx = (CCRANDOM_0_1() > .5 ? 0:1);
-	int idy = (CCRANDOM_0_1() > .5 ? 0:1);
-	PhysicsSprite *sprite = [PhysicsSprite spriteWithTexture:spriteTexture_ rect:CGRectMake(32 * idx,32 * idy,32,32)];						
-	[parent addChild:sprite];
-	
-	sprite.position = ccp( p.x, p.y);
-	
-	// Define the dynamic body.
-	//Set up a 1m squared box in the physics world
-	b2BodyDef bodyDef;
-	bodyDef.type = b2_dynamicBody;
-	bodyDef.position.Set(p.x/PTM_RATIO, p.y/PTM_RATIO);
-	b2Body *body = world->CreateBody(&bodyDef);
-	
-	// Define another box shape for our dynamic body.
-	b2PolygonShape dynamicBox;
-	dynamicBox.SetAsBox(.5f, .5f);//These are mid points for our 1m box
-	
-	// Define the dynamic body fixture.
-	b2FixtureDef fixtureDef;
-	fixtureDef.shape = &dynamicBox;	
-	fixtureDef.density = 1.0f;
-	fixtureDef.friction = 0.3f;
-	body->CreateFixture(&fixtureDef);
-	
-	[sprite setPhysicsBody:body];
-}
-
--(void) update: (ccTime) dt
-{
-	//It is recommended that a fixed time step is used with Box2D for stability
-	//of the simulation, however, we are using a variable time step here.
-	//You need to make an informed choice, the following URL is useful
-	//http://gafferongames.com/game-physics/fix-your-timestep/
-	
-	int32 velocityIterations = 8;
-	int32 positionIterations = 1;
-	
-	// Instruct the world to perform a single step of simulation. It is
-	// generally best to keep the time step and iterations fixed.
-	world->Step(dt, velocityIterations, positionIterations);	
-}
-
-- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	//Add a new body/atlas sprite at the touched location
-	for( UITouch *touch in touches ) {
-		CGPoint location = [touch locationInView: [touch view]];
-		
-		location = [[CCDirector sharedDirector] convertToGL: location];
-		
-		[self addNewSpriteAtPosition: location];
-	}
-}
-
-#pragma mark GameKit delegate
-
--(void) achievementViewControllerDidFinish:(GKAchievementViewController *)viewController
-{
-	AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
-	[[app navController] dismissModalViewControllerAnimated:YES];
-}
-
--(void) leaderboardViewControllerDidFinish:(GKLeaderboardViewController *)viewController
-{
-	AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
-	[[app navController] dismissModalViewControllerAnimated:YES];
-}
-
 @end

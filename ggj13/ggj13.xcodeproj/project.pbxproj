@@ -186,6 +186,7 @@
 		3AC179DC16B3770400913FAA /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 3AC179DB16B3770400913FAA /* Default.png */; };
 		3AC179DE16B3777E00913FAA /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3AC179DD16B3777E00913FAA /* Default@2x.png */; };
 		3AC179E216B377C000913FAA /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3AC179E116B377BF00913FAA /* Default-568h@2x.png */; };
+		3AC179E916B37E9000913FAA /* block_base.png in Resources */ = {isa = PBXBuildFile; fileRef = 3AC179E816B37E9000913FAA /* block_base.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -569,6 +570,7 @@
 		3AC179DB16B3770400913FAA /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		3AC179DD16B3777E00913FAA /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		3AC179E116B377BF00913FAA /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		3AC179E816B37E9000913FAA /* block_base.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = block_base.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -658,6 +660,7 @@
 		3AC175BD16B36EAA00913FAA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				3AC179E816B37E9000913FAA /* block_base.png */,
 				3AC179E116B377BF00913FAA /* Default-568h@2x.png */,
 				3AC179DD16B3777E00913FAA /* Default@2x.png */,
 				3AC179DB16B3770400913FAA /* Default.png */,
@@ -1281,6 +1284,7 @@
 				3AC179DC16B3770400913FAA /* Default.png in Resources */,
 				3AC179DE16B3777E00913FAA /* Default@2x.png in Resources */,
 				3AC179E216B377C000913FAA /* Default-568h@2x.png in Resources */,
+				3AC179E916B37E9000913FAA /* block_base.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1602,6 +1606,7 @@
 				3AC177DC16B36EAD00913FAA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		3AC177EA16B3714A00913FAA /* Build configuration list for PBXNativeTarget "cocos2d-library" */ = {
 			isa = XCConfigurationList;
@@ -1610,6 +1615,7 @@
 				3AC177EC16B3714A00913FAA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
