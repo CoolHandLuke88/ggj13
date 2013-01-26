@@ -8,6 +8,9 @@
 
 #import "HelloWorldLayer.h"
 #import "QueryCallback.h"
+
+
+
 @implementation HelloWorldLayer {
     BOOL isGrabbed;
 }
@@ -50,11 +53,122 @@
 //        [self addLeftBlocks];
 //        [self addRightBlocks];
         [self addTopBlocks];
-        [self schedule:@selector(updateBlock:) interval:1.0f];
+        [self schedule:@selector(updateBlock:) interval:3.0f];
         [self schedule:@selector(tick:)];
-    }
+        
+        //Set up sprite
+        GLESDebugDraw gGLESDebugDraw;
+	/*
+     // --unComment Code below to check body collision/shape whatever.
+        [self addChild:[BoxDebugLayer debugLayerWithWorld:_world ptmRatio:PTM_RATIO] z:10000];
+     */
+        
+#if 1
+		// Use batch node. Faster        
+        CCSpriteBatchNode *parent1 = [CCSpriteBatchNode batchNodeWithFile:@"HeartAqua.png" capacity:100];
+		heartSpriteTexture_ = [parent1 texture];
+        
+        //volumesprite
+        volumeMeterSprite = [CCSprite spriteWithFile:@"Volumebar_black.png"];
+        volumeMeterSprite.position = ccp(160, 25);
+        [self addChild:volumeMeterSprite z:2 tag:0];
+#else
+        heartSpriteTexture_ = [[CCTextureCache sharedTextureCache] addImage:@"HeartAqua.png"];
+		CCNode *parent1 = [CCNode node];
+#endif
+        //heart
+        [self addChild:parent1 z:0 tag:kTagheartParentNode];
+        [self addHeartSpriteAtPosition:ccp(winSize.width/2, winSize.height/2)];
+        
+     }
     return self;
 }
+
+
+-(void) draw
+{
+	//
+	// IMPORTANT:
+	// This is only for debug purposes
+	// It is recommend to disable it
+	//
+	[super draw];
+	
+	ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+	
+	kmGLPushMatrix();
+    
+    b2Draw *debugDraw = new GLESDebugDraw(PTM_RATIO);
+    
+    debugDraw->SetFlags(GLESDebugDraw::e_shapeBit);
+    
+    _world->SetDebugDraw(debugDraw);
+    
+	_world->DrawDebugData();
+	
+	kmGLPopMatrix();
+}
+
+-(void)addHeartSpriteAtPosition:(CGPoint)p
+{
+	CCLOG(@"Add heartsprite %0.2f x %02.f",p.x,p.y);
+    
+    //heart
+    CCNode *parent1 = [self getChildByTag:kTagheartParentNode];
+	
+    //heart
+    PhysicsSprite *heartsSprite = [PhysicsSprite spriteWithTexture:heartSpriteTexture_ rect:CGRectMake(0, 0, 128, 128)];
+    
+	
+    //heart
+    [parent1 addChild:heartsSprite];
+	
+    
+    //heart
+    heartsSprite.position = ccp(p.x, p.y);
+    
+    //heart
+    b2BodyDef heartBodyDef;
+    heartBodyDef.userData = heartsSprite;
+	heartBodyDef.type = b2_staticBody;
+	heartBodyDef.position.Set(p.x/PTM_RATIO, p.y/PTM_RATIO);
+	b2Body *heartBody = _world->CreateBody(&heartBodyDef);
+    
+    //heart shapes
+    //box
+    b2PolygonShape heartdynamicBox;
+	heartdynamicBox.SetAsBox(.30f, .30f);//These are mid points for our 1m box
+	
+    //any shape we make it
+    b2PolygonShape shape;
+    int num = 6;
+    b2Vec2 verts[] = {
+        //middle point
+        b2Vec2(0.0f*heartsSprite.scale / PTM_RATIO, 30.8f*heartsSprite.scale / PTM_RATIO),
+        //left corner top
+        b2Vec2(-35.2f*heartsSprite.scale / PTM_RATIO, 45.0f*heartsSprite.scale / PTM_RATIO),
+        //bottom left corner
+        b2Vec2(-60.0f*heartsSprite.scale / PTM_RATIO, -01.1f*heartsSprite.scale / PTM_RATIO),
+        //center bottom
+        b2Vec2(02.0f*heartsSprite.scale / PTM_RATIO, -62.0f*heartsSprite.scale / PTM_RATIO),
+        //bottom right corner
+        b2Vec2(60.0f*heartsSprite.scale / PTM_RATIO, -01.1f*heartsSprite.scale / PTM_RATIO),
+        //top right corner
+        b2Vec2(35.2f*heartsSprite.scale / PTM_RATIO, 45.0f*heartsSprite.scale / PTM_RATIO)
+    };
+    
+    shape.Set(verts, num);
+    b2FixtureDef heartFixtureDef;
+	heartFixtureDef.shape = &shape;
+	heartFixtureDef.density = 1.0f;
+	heartFixtureDef.friction = 0.3f;
+    heartFixtureDef.restitution = 0.4;
+	heartBody->CreateFixture(&heartFixtureDef);
+    [heartsSprite setPhysicsBody:heartBody];
+}
+
+
+
 - (void)addTopBlocks {
     CGSize winSize = [CCDirector sharedDirector].winSize;
     CCSprite *tempSprite = [CCSprite spriteWithFile:@"block_base.png"];
