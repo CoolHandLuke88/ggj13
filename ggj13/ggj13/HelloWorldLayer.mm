@@ -39,18 +39,15 @@
         // wall definitions
         groundEdge.Set(b2Vec2(0,0), b2Vec2(winSize.width/PTM_RATIO, 0));
         groundBody->CreateFixture(&boxShapeDef);
-        // possible block implementation for future use
-        /*
-        CCCallBlock *actionBlock = [CCCallBlock actionWithBlock:^{
-            [self randomBlockDrop:_topBlockArray];
-        }];
-        */
-        [self addTopBlocks];
+        groundEdge.Set(b2Vec2(0, 0), b2Vec2(0, winSize.height/PTM_RATIO));
+        groundBody->CreateFixture(&boxShapeDef);
+        groundEdge.Set(b2Vec2(0, winSize.height/PTM_RATIO), b2Vec2(winSize.width/PTM_RATIO, winSize.height/PTM_RATIO));
+        groundBody->CreateFixture(&boxShapeDef);
+        groundEdge.Set(b2Vec2(winSize.width/PTM_RATIO, winSize.height/PTM_RATIO), b2Vec2(winSize.width/PTM_RATIO, 0));
+        groundBody->CreateFixture(&boxShapeDef);
 //        [self addLeftBlocks];
 //        [self addRightBlocks];
-//        id actionDelay = [CCDelayTime actionWithDuration:5];
-//        id actionDone = [CCCallFuncO actionWithTarget:self selector:@selector(updateBlock:)];
-//        [self runAction:[CCSequence actions:actionDelay, actionDone, nil]];
+        [self addTopBlocks];
         [self schedule:@selector(updateBlock:) interval:1.0f];
         [self schedule:@selector(tick:)];
     }
@@ -154,7 +151,7 @@
 }
 - (void)chooseBlock:(ccTime)dt withArray:(NSMutableArray *)blockArray {
     int numItems = blockArray.count;
-    int randIndex = arc4random() % 10;
+    int randIndex = arc4random() % numItems;
     CCSprite *block = [CCSprite spriteWithFile:@"block_base.png"];
     for (int i = 0; i < numItems; i++) {
         // holy shit, pissssss
@@ -165,6 +162,9 @@
             {
                 CCLOG(@"Found body at index %i", randIndex);
                 body->SetType(b2_dynamicBody);
+                [blockArray removeObject:block];
+                CCLOG(@"Current array count: %d", numItems);
+                break;
             }
         }
     }
