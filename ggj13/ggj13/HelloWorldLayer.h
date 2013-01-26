@@ -23,5 +23,8 @@
     b2MouseJoint *_mouseJoint;
 }
 @property (strong, nonatomic) NSMutableArray *topBlockArray;
+@property (strong, nonatomic) NSMutableArray *topMissingArray;
+@property (assign, nonatomic) b2Body *grabbedBody;
+@property (assign, nonatomic) CGPoint snapPoint;
 + (id)scene;
 @end

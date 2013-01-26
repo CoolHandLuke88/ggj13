@@ -8,7 +8,9 @@
 
 #import "HelloWorldLayer.h"
 #import "QueryCallback.h"
-@implementation HelloWorldLayer
+@implementation HelloWorldLayer {
+    BOOL isGrabbed;
+}
 + (id)scene {
     CCScene *scene = [CCScene node];
     HelloWorldLayer *layer = [HelloWorldLayer node];
@@ -60,11 +62,15 @@
     int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width / imageWidth;
     self.topBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
+    self.topMissingArray = [NSMutableArray arrayWithCapacity:numBlocks];
     for (int i = 0; i < numBlocks; i++) {
         _body = nil;
         _block = nil;
         _block = [CCSprite spriteWithFile:@"block_base.png"];
         _block.position = CGPointMake(_block.contentSize.width * i+_block.contentSize.width * 0.5f, winSize.height - _block.contentSize.height/2);
+        CCSprite *futureBlock = [CCSprite spriteWithFile:@"block_base.png"];
+        futureBlock.color = ccc3(100, 100, 100);
+        futureBlock.position = _block.position;
         // create block body and shape
         b2BodyDef blockBodyDef;
         blockBodyDef.type = b2_staticBody;
@@ -82,7 +88,9 @@
         blockShapeDef.restitution = 0;
         _body->CreateFixture(&blockShapeDef);
         [self.topBlockArray addObject:_block];
-        [self addChild:_block];
+        [self.topMissingArray addObject:futureBlock];
+        [self addChild:_block z:0];
+        [self addChild:futureBlock z:-1];
     }
 }
 - (void)addLeftBlocks {
@@ -150,6 +158,7 @@
     [self chooseBlock:dt withArray:self.topBlockArray];
 }
 - (void)chooseBlock:(ccTime)dt withArray:(NSMutableArray *)blockArray {
+    NSMutableArray *missingArray;
     int numItems = blockArray.count;
     int randIndex = arc4random() % numItems;
     CCSprite *block = [CCSprite spriteWithFile:@"block_base.png"];
@@ -160,10 +169,9 @@
             b2Body* body = (b2Body *)block.userData;
             if (body != nil)
             {
-                CCLOG(@"Found body at index %i", randIndex);
                 body->SetType(b2_dynamicBody);
                 [blockArray removeObject:block];
-                CCLOG(@"Current array count: %d", numItems);
+                // [missingArray insertObject:futureBlock atIndex:i];
                 break;
             }
         }
@@ -203,11 +211,14 @@
     
 	if (callback.m_fixture)
 	{
-        
+        isGrabbed = YES;
+        CCLOG(@"isGrabbed = %d", isGrabbed);
 		b2BodyDef bodyDef;
 		b2Body* groundBody = _world->CreateBody(&bodyDef);
         
 		b2Body* bodyz = callback.m_fixture->GetBody();
+        self.grabbedBody = bodyz;
+        CCLOG(@"Grabbed body!");
 		bodyz->SetAwake(true);
         
 		b2MouseJointDef md;
@@ -232,16 +243,54 @@
 	{
 		_mouseJoint->SetTarget(_mouseWorld);
 	}
+    // hover over ghost image
+    // CCSprite *futureBlock = [CCSprite spriteWithFile:@"block_base.png"];
+    for (CCSprite *block in self.topMissingArray) {
+        CGRect rect = CGRectMake(block.position.x, block.position.y, block.contentSize.width, block.contentSize.height);
+        // CGPoint newPoint = [sprite convertToNodeSpace:oldPoint];
+        if (CGRectContainsPoint(rect, location)) {
+            CCLOG(@"HIT!!!");
+            self.snapPoint = block.position;
+            // reimplement color highlighting later
+            /* block.color = ccc3(255, 255, 255); */
+        } else {
+            // CCLOG(@"NOPE!!!");
+            // self.snapPoint = CGPointZero;
+            /* block.color = ccc3(100, 100, 100); */
+        }
+    }
 }
 - (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
+    UITouch* myTouch = [touches anyObject];
+	CGPoint location = [myTouch locationInView: [myTouch view]];
+	location = [[CCDirector sharedDirector] convertToGL:location];
+	location = [self convertToNodeSpace:location];
+    
 	[self ccTouchesCancelled:touches withEvent:event];
+    for (CCSprite *block in self.topMissingArray) {
+        CGRect rect = CGRectMake(block.position.x, block.position.y, block.contentSize.width, block.contentSize.height);
+        if (CGRectContainsPoint(rect, location)) {
+            CCLOG(@"HIT!!!");
+            self.snapPoint = block.position;
+            /* block.color = ccc3(100, 100, 100); */
+            if (!isGrabbed) {
+                self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
+                self.grabbedBody->SetType(b2_staticBody);
+                block.userData = self.grabbedBody;
+                [self.topBlockArray addObject:block];
+            }
+        }
+    }
 }
 - (void)ccTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	if (_mouseJoint)
 	{
 		_world->DestroyJoint(_mouseJoint);
 		_mouseJoint = NULL;
+        isGrabbed = NO;
+        CCLOG(@"Released body!");
+        CCLOG(@"isGrabbed: %d", isGrabbed);
 	}
 }
 //- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
