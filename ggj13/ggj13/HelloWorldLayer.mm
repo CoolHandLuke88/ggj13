@@ -7,6 +7,7 @@
 //
 
 #import "HelloWorldLayer.h"
+#import "QueryCallback.h"
 @implementation HelloWorldLayer
 + (id)scene {
     CCScene *scene = [CCScene node];
@@ -17,6 +18,8 @@
 - (id)init {
     self = [super init];
     if (self) {
+        // mousejoin nil
+        _mouseJoint = nil;
         // enable touch
         self.isTouchEnabled = YES;
         CGSize winSize = [CCDirector sharedDirector].winSize;
@@ -55,7 +58,7 @@
         _block.position = CGPointMake(_block.contentSize.width * i+_block.contentSize.width * 0.5f, winSize.height - _block.contentSize.height/2);
         // create block body and shape
         b2BodyDef blockBodyDef;
-        blockBodyDef.type = b2_staticBody;
+        blockBodyDef.type = b2_dynamicBody;
         blockBodyDef.position.Set(_block.position.x/PTM_RATIO, _block.position.y/PTM_RATIO);
         blockBodyDef.userData = _block;
         _body = _world->CreateBody(&blockBodyDef);
@@ -81,23 +84,82 @@
         }
     }
 }
-- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    // switch bodydef to dynamic and back
-    /*
-    CCLOG(@"Touch!!");
-    for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
-        if (b->GetType() == b2_dynamicBody) {
-            CCLOG(@"Bodies dynamic, going static...");
-            b->SetType(b2_staticBody);
-        } else {
-            CCLOG(@"Bodies static, going dynamic...");
-            b->SetType(b2_dynamicBody);
-        }
-    }
-    */
-    // apply random force
-    float rand = CCRANDOM_0_1() * 50;
-    b2Vec2 force = b2Vec2(0, rand);
-    _body->ApplyLinearImpulse(force, _body->GetPosition());
+- (void)ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	UITouch* myTouch = [touches anyObject];
+	CGPoint location = [myTouch locationInView: [myTouch view]];
+	location = [[CCDirector sharedDirector] convertToGL:location];
+	location = [self convertToNodeSpace:location];
+    
+	_mouseWorld.Set(ptm(location.x), ptm(location.y));
+	if (_mouseJoint != NULL)
+	{
+		return;
+	}
+    
+	b2AABB aabb;
+	b2Vec2 d = b2Vec2(0.001f, 0.001f);
+	aabb.lowerBound = _mouseWorld - d;
+	aabb.upperBound = _mouseWorld + d;
+    
+	// Query the world for overlapping shapes.
+	QueryCallback callback(_mouseWorld);
+	_world->QueryAABB(&callback, aabb);
+    
+	if (callback.m_fixture)
+	{
+        
+		b2BodyDef bodyDef;
+		b2Body* groundBody = _world->CreateBody(&bodyDef);
+        
+		b2Body* bodyz = callback.m_fixture->GetBody();
+		bodyz->SetAwake(true);
+        
+		b2MouseJointDef md;
+		md.bodyA = groundBody;
+		md.bodyB = bodyz;
+		md.target = _mouseWorld;
+		md.maxForce = 1000.0f * bodyz->GetMass();
+        
+		_mouseJoint = (b2MouseJoint*)_world->CreateJoint(&md);
+	}
 }
+- (void)ccTouchesMoved:(NSSet*)touches withEvent:(UIEvent*)event
+{
+	UITouch* myTouch = [touches anyObject];
+	CGPoint location = [myTouch locationInView: [myTouch view]];
+	location = [[CCDirector sharedDirector] convertToGL:location];
+	location = [self convertToNodeSpace:location];
+    
+	_mouseWorld.Set(ptm(location.x), ptm(location.y));
+    
+	if (_mouseJoint)
+	{
+		_mouseJoint->SetTarget(_mouseWorld);
+	}
+}
+- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	[self ccTouchesCancelled:touches withEvent:event];
+}
+- (void)ccTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+	if (_mouseJoint)
+	{
+		_world->DestroyJoint(_mouseJoint);
+		_mouseJoint = NULL;
+	}
+}
+//- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+//    // switch bodydef to dynamic and back
+////    CCLOG(@"Touch!!");
+////    for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
+////        if (b->GetType() == b2_dynamicBody) {
+////            CCLOG(@"Bodies dynamic, going static...");
+////            b->SetType(b2_staticBody);
+////        } else {
+////            CCLOG(@"Bodies static, going dynamic...");
+////            b->SetType(b2_dynamicBody);
+////        }
+////    }
+//}
 @end

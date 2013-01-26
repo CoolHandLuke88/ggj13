@@ -571,6 +571,7 @@
 		3AC179DD16B3777E00913FAA /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		3AC179E116B377BF00913FAA /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		3AC179E816B37E9000913FAA /* block_base.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = block_base.png; sourceTree = "<group>"; };
+		3AC17A0316B3AC5200913FAA /* QueryCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QueryCallback.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -641,6 +642,7 @@
 		3AC175BC16B36EAA00913FAA /* ggj13 */ = {
 			isa = PBXGroup;
 			children = (
+				3AC17A0316B3AC5200913FAA /* QueryCallback.h */,
 				3AC177C716B36EAD00913FAA /* AppDelegate.h */,
 				3AC177C816B36EAD00913FAA /* AppDelegate.mm */,
 				3AC177CA16B36EAD00913FAA /* HelloWorldLayer.h */,
