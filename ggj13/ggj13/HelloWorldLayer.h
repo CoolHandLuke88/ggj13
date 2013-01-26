@@ -13,7 +13,7 @@
 #define ptm(__x__) (__x__/PTM_RATIO)
 
 @interface HelloWorldLayer : CCLayer {
-    NSMutableArray *_topBlockArray;
+    // NSMutableArray *_topBlockArray;
     NSMutableArray *_rightBlockArray;
     NSMutableArray *_leftBlockArray;
     b2World *_world;
@@ -22,5 +22,6 @@
     b2Vec2 _mouseWorld;
     b2MouseJoint *_mouseJoint;
 }
+@property (strong, nonatomic) NSMutableArray *topBlockArray;
 + (id)scene;
 @end

@@ -39,10 +39,19 @@
         // wall definitions
         groundEdge.Set(b2Vec2(0,0), b2Vec2(winSize.width/PTM_RATIO, 0));
         groundBody->CreateFixture(&boxShapeDef);
+        // possible block implementation for future use
+        /*
+        CCCallBlock *actionBlock = [CCCallBlock actionWithBlock:^{
+            [self randomBlockDrop:_topBlockArray];
+        }];
+        */
         [self addTopBlocks];
-        [self addLeftBlocks];
-        [self addRightBlocks];
-        [self randomBlockDrop:_topBlockArray];
+//        [self addLeftBlocks];
+//        [self addRightBlocks];
+//        id actionDelay = [CCDelayTime actionWithDuration:5];
+//        id actionDone = [CCCallFuncO actionWithTarget:self selector:@selector(updateBlock:)];
+//        [self runAction:[CCSequence actions:actionDelay, actionDone, nil]];
+        [self schedule:@selector(updateBlock:) interval:1.0f];
         [self schedule:@selector(tick:)];
     }
     return self;
@@ -53,7 +62,7 @@
     int imageWidth = tempSprite.contentSize.width;
     int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width / imageWidth;
-    _topBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
+    self.topBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
     for (int i = 0; i < numBlocks; i++) {
         _body = nil;
         _block = nil;
@@ -75,7 +84,7 @@
         blockShapeDef.friction = 0.2f;
         blockShapeDef.restitution = 0;
         _body->CreateFixture(&blockShapeDef);
-        [_topBlockArray addObject:_block];
+        [self.topBlockArray addObject:_block];
         [self addChild:_block];
     }
 }
@@ -139,8 +148,11 @@
         [self addChild:_block];
     }
 }
-
-- (void)randomBlockDrop:(NSMutableArray *)blockArray {
+- (void)updateBlock:(ccTime) dt {
+    CCLOG(@"array count: %d", self.topBlockArray.count);
+    [self chooseBlock:dt withArray:self.topBlockArray];
+}
+- (void)chooseBlock:(ccTime)dt withArray:(NSMutableArray *)blockArray {
     int numItems = blockArray.count;
     int randIndex = arc4random() % 10;
     CCSprite *block = [CCSprite spriteWithFile:@"block_base.png"];
