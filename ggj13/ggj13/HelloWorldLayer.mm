@@ -62,15 +62,13 @@
     int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width / imageWidth;
     self.topBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
-    self.topMissingArray = [NSMutableArray arrayWithCapacity:numBlocks];
+    self.topMissingArray = [[NSMutableArray alloc] init];
     for (int i = 0; i < numBlocks; i++) {
         _body = nil;
         _block = nil;
         _block = [CCSprite spriteWithFile:@"block_base.png"];
         _block.position = CGPointMake(_block.contentSize.width * i+_block.contentSize.width * 0.5f, winSize.height - _block.contentSize.height/2);
-        CCSprite *futureBlock = [CCSprite spriteWithFile:@"block_base.png"];
-        futureBlock.color = ccc3(100, 100, 100);
-        futureBlock.position = _block.position;
+        
         // create block body and shape
         b2BodyDef blockBodyDef;
         blockBodyDef.type = b2_staticBody;
@@ -88,9 +86,8 @@
         blockShapeDef.restitution = 0;
         _body->CreateFixture(&blockShapeDef);
         [self.topBlockArray addObject:_block];
-        [self.topMissingArray addObject:futureBlock];
+        // [self.topMissingArray addObject:futureBlock];
         [self addChild:_block z:0];
-        [self addChild:futureBlock z:-1];
     }
 }
 - (void)addLeftBlocks {
@@ -158,10 +155,14 @@
     [self chooseBlock:dt withArray:self.topBlockArray];
 }
 - (void)chooseBlock:(ccTime)dt withArray:(NSMutableArray *)blockArray {
-    NSMutableArray *missingArray;
     int numItems = blockArray.count;
     int randIndex = arc4random() % numItems;
+    NSMutableArray *missingArray;
+    if (blockArray == self.topBlockArray) {
+        missingArray = self.topMissingArray;
+    }
     CCSprite *block = [CCSprite spriteWithFile:@"block_base.png"];
+    CCSprite *futureBlock = [CCSprite spriteWithFile:@"block_base.png"];
     for (int i = 0; i < numItems; i++) {
         // holy shit, pissssss
         if (i == randIndex) {
@@ -169,9 +170,12 @@
             b2Body* body = (b2Body *)block.userData;
             if (body != nil)
             {
+                futureBlock.color = ccc3(100, 100, 100);
+                futureBlock.position = block.position;
+                [missingArray addObject:futureBlock];
+                [self addChild:futureBlock z:-1];
                 body->SetType(b2_dynamicBody);
                 [blockArray removeObject:block];
-                // [missingArray insertObject:futureBlock atIndex:i];
                 break;
             }
         }
@@ -288,7 +292,9 @@
 	{
 		_world->DestroyJoint(_mouseJoint);
 		_mouseJoint = NULL;
-        isGrabbed = NO;
+        if (isGrabbed) {
+            isGrabbed = NO;
+        }
         CCLOG(@"Released body!");
         CCLOG(@"isGrabbed: %d", isGrabbed);
 	}
