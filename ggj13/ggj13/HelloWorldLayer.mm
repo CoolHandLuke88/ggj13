@@ -66,6 +66,10 @@
         
         //Set up sprite
         GLESDebugDraw gGLESDebugDraw;
+        self.numberofBar = 32;
+        self.newBar = 0;
+        self->_contactListener = new MyContactListener();
+        _world->SetContactListener(self->_contactListener);
 	/*
      // --unComment Code below to check body collision/shape whatever.
         [self addChild:[BoxDebugLayer debugLayerWithWorld:_world ptmRatio:PTM_RATIO] z:10000];
@@ -105,6 +109,25 @@
 - (void)setScoreLabel:(NSString *)string {
     _scoreLabel.string = string;
 }
+
+-(void)incrementVolumeMeter{
+    for (int i = 0; i < 63; i++) {
+        if (self.newBar != 0) {
+            self.numberofBar = self.newBar;
+        }
+        if (self.numberofBar == 32) {
+            volumeBarSprite = [CCSprite spriteWithFile:@"Volumebar_slider.png"];
+            [self addChild:volumeBarSprite z:3 tag:3];
+        }
+        self.numberofBar = self.numberofBar +4;
+        volumeBarSprite.position = ccp(self.numberofBar, 25);
+        self.newBar = self.numberofBar;
+        
+        volumeBarSprite = [CCSprite spriteWithFile:@"Volumebar_slider.png"];
+        [self addChild:volumeBarSprite z:3 tag:3+i];
+    }
+}
+
 - (void)draw
 {
 	//
@@ -136,7 +159,7 @@
     CCNode *parent1 = [self getChildByTag:kTagheartParentNode];
 	
     //heart
-    PhysicsSprite *heartsSprite = [PhysicsSprite spriteWithTexture:heartSpriteTexture_ rect:CGRectMake(0, 0, 128, 128)];
+    PhysicsSprite *heartsSprite = [PhysicsSprite spriteWithTexture:heartSpriteTexture_];
     
 	
     //heart
@@ -157,6 +180,10 @@
     //box
     b2PolygonShape heartdynamicBox;
 	heartdynamicBox.SetAsBox(.30f, .30f);//These are mid points for our 1m box
+    
+    // Create circle shape
+    b2CircleShape circle;
+    circle.m_radius = 46.0/PTM_RATIO;
 	
     //any shape we make it
     b2PolygonShape shape;
@@ -178,11 +205,12 @@
     
     shape.Set(verts, num);
     b2FixtureDef heartFixtureDef;
-	heartFixtureDef.shape = &shape;
+	heartFixtureDef.shape = &circle;
 	heartFixtureDef.density = 1.0f;
 	heartFixtureDef.friction = 0.3f;
     heartFixtureDef.restitution = 0.4;
 	heartBody->CreateFixture(&heartFixtureDef);
+     heartFixture = heartBody->CreateFixture(&heartFixtureDef);
     [heartsSprite setPhysicsBody:heartBody];
 }
 - (void)addTopBlocks {
@@ -197,6 +225,7 @@
         _body = nil;
         _block = nil;
         _block = [CCSprite spriteWithFile:@"80block.png"];
+        _block.tag = kTagParentNode;
         _block.position = CGPointMake(_block.contentSize.width * i+_block.contentSize.width * 0.5f, winSize.height - _block.contentSize.height/2);
         
         // create block body and shape
@@ -205,6 +234,7 @@
         blockBodyDef.position.Set(_block.position.x/PTM_RATIO, _block.position.y/PTM_RATIO);
         blockBodyDef.userData = _block;
         _body = _world->CreateBody(&blockBodyDef);
+    
         _block.userData = _body;
         // modified for box shape instead of circle (from Ray Wenderlich's tutorial series)
         b2PolygonShape box;
@@ -215,6 +245,7 @@
         blockShapeDef.friction = 0.2f;
         blockShapeDef.restitution = 0;
         _body->CreateFixture(&blockShapeDef);
+        blockFixture = _body->CreateFixture(&blockShapeDef);
         [self.topBlockArray addObject:_block];
         // [self.topMissingArray addObject:futureBlock];
         [self addChild:_block z:0];
@@ -309,6 +340,8 @@
                 [missingArray addObject:futureBlock];
                 CCLOG(@"topmissing count: %d", missingArray.count);
                 [self addChild:futureBlock z:-1];
+                block.tag = i;
+                self.assignedBlockTag = i;
                 body->SetType(b2_dynamicBody);
                 [blockArray removeObject:block];
                 break;
@@ -317,13 +350,108 @@
     }
 }
 - (void)tick:(ccTime)dt {
+     bool blockFound = false;
     _world->Step(dt, 10, 10);
     for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
         if (b->GetUserData() != NULL) {
             CCSprite *blockData = (CCSprite *)b->GetUserData();
             blockData.position = ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO);
             blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
+            
+            if (blockData.tag >= 3) {
+                blockFound = true;
+            }
+            blockData.position = ccp(b->GetPosition().x * PTM_RATIO,
+                                     b->GetPosition().y * PTM_RATIO);
+            blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
         }
+    }
+    
+    std::vector<b2Body *>toDestroy;
+    std::vector<MyContact>::iterator pos;
+    for (pos=_contactListener->_contacts.begin();
+         pos != _contactListener->_contacts.end(); ++pos) {
+        MyContact contact = *pos;
+        
+        if (contact.fixtureA != nil && contact.fixtureB != nil) {
+            NSLog(@"we made contact weeee!");
+        }
+        
+        if ((contact.fixtureA == heartFixture && contact.fixtureB == blockFixture) ||
+            (contact.fixtureA == blockFixture && contact.fixtureB == heartFixture)) {
+            NSLog(@"Ball hit bottom!");
+            //CCScene *gameOverScene = [GameOverLayer sceneWithWon:NO];
+            //[[CCDirector sharedDirector] replaceScene:gameOverScene];
+        }
+        
+        
+//        b2Fixture* fixtureA = heartFixture;
+//        b2Fixture* fixtureB = blockFixture;
+        
+//        b2Body *bodyC = fixtureA->GetBody();
+//        b2Body *bodyD = fixtureB->GetBody();
+//        
+//        id userDataC = (id)bodyC->GetUserData();
+//        id userDataD = (id)bodyD->GetUserData();
+        
+       
+        
+//        if([userDataC isKindOfClass:[CCSprite class] && userDataD isKindOfClass:[CCSprite class]]){
+//            CCSprite *vehicleC = (CCSprite*)userDataC;
+//            CCSprite *vehicleD = (CCSprite*)userDataD;
+//            CCSprite *tempHeartSprite = [CCSprite spriteWithFile:@"HeartAqua.png"];
+//            CCSprite *tempBlockSprite = [CCSprite spriteWithFile:@"80block.ng"];
+//            CGSize winSize = [CCDirector sharedDirector].winSize;
+//            if (vehicleD.position.x > (winSize.width + tempBlockSprite.contentSize.width/2) ||
+//                vehicleD.position.x < (0 - tempBlockSprite.contentSize.width/2) ||
+//                vehicleD.position.y > (winSize.height + tempBlockSprite.contentSize.height/2) ||
+//                (vehicleD.position.y < (0 - tempBlockSprite.contentSize.height/2)
+//                && vehicleD != 0)) {
+//                NSLog(@"Collision on Screen!!!");
+//            }
+//        
+//        }
+        
+
+        b2Body *bodyA = contact.fixtureA->GetBody();
+        b2Body *bodyB = contact.fixtureB->GetBody();
+        if (bodyA->GetUserData() != NULL && bodyB->GetUserData() != NULL) {
+            CCSprite *spriteA = (CCSprite *) bodyA->GetUserData();
+            CCSprite *spriteB = (CCSprite *) bodyB->GetUserData();
+            
+            //Sprite A = ball, Sprite B = Block
+            if (spriteA.tag == self.assignedBlockTag && spriteB.tag == -1) {
+                if (std::find(toDestroy.begin(), toDestroy.end(), bodyA) == toDestroy.end()) {
+                    toDestroy.push_back(bodyA);
+                }
+            }
+            
+            //Sprite A = block, Sprite B = ball
+            else if (spriteA.tag == kTagParentNode && spriteB.tag == kTagheartParentNode) {
+                if (std::find(toDestroy.begin(), toDestroy.end(), bodyB) == toDestroy.end()) {
+                    toDestroy.push_back(bodyB);
+                }
+            }
+        }
+    }
+    
+    std::vector<b2Body *>::iterator pos2;
+    for (pos2 = toDestroy.begin(); pos2 != toDestroy.end(); ++pos2) {
+        b2Body *body = *pos2;
+        if (body->GetUserData() != NULL) {
+            CCSprite *sprite = (CCSprite *) body->GetUserData();
+            [self removeChild:sprite cleanup:YES];
+        }
+        _world->DestroyBody(body);
+    }
+    
+    if (!blockFound) {
+        // CCScene *gameOverScene = [GameOverLayer sceneWithWon:YES];
+        //[[CCDirector sharedDirector] replaceScene:gameOverScene];
+    }
+    
+    if (toDestroy.size() > 0) {
+        //[[SimpleAudioEngine sharedEngine] playEffect:@"blip.caf"];
     }
     [self updateScore];
     [self checkCollision];

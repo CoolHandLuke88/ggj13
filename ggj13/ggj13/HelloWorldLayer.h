@@ -12,6 +12,7 @@
 #import "BoxDebugLayer.h"
 #import "GLES-Render.h"
 #import "PhysicsSprite.h"
+#import "MyContactListener.h"
 
 #define PTM_RATIO 32.0
 #define ptm(__x__) (__x__/PTM_RATIO)
@@ -35,12 +36,19 @@ enum {
     CCSprite *volumeMeterSprite;
     CCSprite *volumeBarSprite;
     CCLabelTTF *_scoreLabel;
+    b2Fixture *heartFixture;
+    b2Fixture *blockFixture;
+    MyContactListener *_contactListener;
     int score;
 }
 @property (strong, nonatomic) NSMutableArray *topBlockArray;
 @property (strong, nonatomic) NSMutableArray *topMissingArray;
 @property (assign, nonatomic) b2Body *grabbedBody;
 @property (assign, nonatomic) CGPoint snapPoint;
+@property (assign, nonatomic) int numberofBar;
+@property (assign, nonatomic) int newBar;
+@property (assign, nonatomic)  b2FixtureDef blockShapeDef;
+@property (assign, nonatomic) NSInteger assignedBlockTag;
 -(void) addHeartSpriteAtPosition:(CGPoint)p;
 + (id)scene;
 @end

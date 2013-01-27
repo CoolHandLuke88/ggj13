@@ -190,6 +190,7 @@
 		3AC179DE16B3777E00913FAA /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3AC179DD16B3777E00913FAA /* Default@2x.png */; };
 		3AC179E216B377C000913FAA /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3AC179E116B377BF00913FAA /* Default-568h@2x.png */; };
 		3AC179E916B37E9000913FAA /* block_base.png in Resources */ = {isa = PBXBuildFile; fileRef = 3AC179E816B37E9000913FAA /* block_base.png */; };
+		7707E8EF16B4F47C00D45D99 /* MyContactListener.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7707E8EE16B4F47C00D45D99 /* MyContactListener.mm */; };
 		771F9AD416B4877900D82CD6 /* ggj13rhythms.band in Resources */ = {isa = PBXBuildFile; fileRef = 771F9A7A16B4877900D82CD6 /* ggj13rhythms.band */; };
 		771F9AD516B4877900D82CD6 /* block_bounceoff.wav in Resources */ = {isa = PBXBuildFile; fileRef = 771F9A7C16B4877900D82CD6 /* block_bounceoff.wav */; };
 		771F9AD616B4877900D82CD6 /* block_disappear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 771F9A7D16B4877900D82CD6 /* block_disappear.wav */; };
@@ -665,6 +666,8 @@
 		3AC179E116B377BF00913FAA /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		3AC179E816B37E9000913FAA /* block_base.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = block_base.png; sourceTree = "<group>"; };
 		3AC17A0316B3AC5200913FAA /* QueryCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QueryCallback.h; sourceTree = "<group>"; };
+		7707E8ED16B4F47C00D45D99 /* MyContactListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyContactListener.h; sourceTree = "<group>"; };
+		7707E8EE16B4F47C00D45D99 /* MyContactListener.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MyContactListener.mm; sourceTree = "<group>"; };
 		771F9A7A16B4877900D82CD6 /* ggj13rhythms.band */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ggj13rhythms.band; sourceTree = "<group>"; };
 		771F9A7C16B4877900D82CD6 /* block_bounceoff.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = block_bounceoff.wav; sourceTree = "<group>"; };
 		771F9A7D16B4877900D82CD6 /* block_disappear.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = block_disappear.wav; sourceTree = "<group>"; };
@@ -822,6 +825,8 @@
 		3AC175BC16B36EAA00913FAA /* ggj13 */ = {
 			isa = PBXGroup;
 			children = (
+				7707E8ED16B4F47C00D45D99 /* MyContactListener.h */,
+				7707E8EE16B4F47C00D45D99 /* MyContactListener.mm */,
 				3A610A9116B4EC8500FC835C /* GameOverLayer.h */,
 				3A610A9216B4EC8600FC835C /* GameOverLayer.mm */,
 				3A1856FA16B4C876009070E2 /* TitleLayer.h */,
@@ -1711,6 +1716,7 @@
 				3AC177D516B36EAD00913FAA /* PhysicsSprite.mm in Sources */,
 				3A1856FC16B4C876009070E2 /* TitleLayer.mm in Sources */,
 				3A610A9316B4EC8700FC835C /* GameOverLayer.mm in Sources */,
+				7707E8EF16B4F47C00D45D99 /* MyContactListener.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
