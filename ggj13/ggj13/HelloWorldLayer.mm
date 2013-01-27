@@ -24,12 +24,17 @@
 - (id)init {
     self = [super init];
     if (self) {
+        CGSize winSize = [CCDirector sharedDirector].winSize;
+        CCSprite *tempSprite = [CCSprite spriteWithFile:@"80block.png"];
+        int imageHeight = tempSprite.contentSize.height;
         [[CCDirector sharedDirector] setDisplayStats:NO];
+        _scoreLabel = [CCLabelTTF labelWithString:@"Score: 0" fontName:@"Arial" fontSize:16];
+        _scoreLabel.position = ccp(0 + _scoreLabel.contentSize.width/2, winSize.height - imageHeight - _scoreLabel.contentSize.height/2);
+        [self addChild:_scoreLabel z:1];
         // mousejoin nil
         _mouseJoint = nil;
         // enable touch
         self.isTouchEnabled = YES;
-        CGSize winSize = [CCDirector sharedDirector].winSize;
         // create sprite and add it to the layer
 //        _block = [CCSprite spriteWithFile:@"block_base.png"];
 //        _block.position = ccp(100, 300);
@@ -84,6 +89,17 @@
         
      }
     return self;
+}
+- (void)updateScore {
+    CGSize winSize = [CCDirector sharedDirector].winSize;
+    [self setScoreLabel:[NSString stringWithFormat:@"Score: %d", score]];
+    CCSprite *tempSprite = [CCSprite spriteWithFile:@"80block.png"];
+    int imageHeight = tempSprite.contentSize.height;
+    _scoreLabel.position = ccp(0 + _scoreLabel.contentSize.width/2, winSize.height - imageHeight - _scoreLabel.contentSize.height/2);
+}
+- (void)setScoreLabel:(NSString *)string {
+    _scoreLabel.string = string;
+    
 }
 - (void)draw
 {
@@ -301,6 +317,7 @@
             blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
         }
     }
+    [self updateScore];
     [self checkCollision];
 }
 - (void)checkCollision {
@@ -320,6 +337,7 @@
                 block.userData = self.grabbedBody;
                 [self.topBlockArray addObject:block];
                 index = [self.topMissingArray indexOfObject:block];
+                score += 10;
             }
         }
     }
@@ -397,6 +415,7 @@
                 block.userData = self.grabbedBody;
                 [self.topBlockArray addObject:block];
                 index = [self.topMissingArray indexOfObject:block];
+                score += 10;
             }
         }
     }

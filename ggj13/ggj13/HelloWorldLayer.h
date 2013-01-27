@@ -12,6 +12,7 @@
 #import "BoxDebugLayer.h"
 #import "GLES-Render.h"
 #import "PhysicsSprite.h"
+
 #define PTM_RATIO 32.0
 #define ptm(__x__) (__x__/PTM_RATIO)
 
@@ -33,6 +34,8 @@ enum {
     CCTexture2D *heartSpriteTexture_;	// weak ref
     CCSprite *volumeMeterSprite;
     CCSprite *volumeBarSprite;
+    CCLabelTTF *_scoreLabel;
+    int score;
 }
 @property (strong, nonatomic) NSMutableArray *topBlockArray;
 @property (strong, nonatomic) NSMutableArray *topMissingArray;
