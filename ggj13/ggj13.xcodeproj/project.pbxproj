@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		3A1856F816B4C498009070E2 /* 80block.png in Resources */ = {isa = PBXBuildFile; fileRef = 3A1856F716B4C498009070E2 /* 80block.png */; };
 		3A1856FC16B4C876009070E2 /* TitleLayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3A1856FB16B4C876009070E2 /* TitleLayer.mm */; };
+		3A610A9316B4EC8700FC835C /* GameOverLayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3A610A9216B4EC8600FC835C /* GameOverLayer.mm */; };
 		3AC175AB16B36EAA00913FAA /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AC175AA16B36EAA00913FAA /* QuartzCore.framework */; };
 		3AC175AD16B36EAA00913FAA /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AC175AC16B36EAA00913FAA /* OpenGLES.framework */; };
 		3AC175AF16B36EAA00913FAA /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AC175AE16B36EAA00913FAA /* OpenAL.framework */; };
@@ -293,6 +294,8 @@
 		3A1856F716B4C498009070E2 /* 80block.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 80block.png; sourceTree = "<group>"; };
 		3A1856FA16B4C876009070E2 /* TitleLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TitleLayer.h; sourceTree = "<group>"; };
 		3A1856FB16B4C876009070E2 /* TitleLayer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TitleLayer.mm; sourceTree = "<group>"; };
+		3A610A9116B4EC8500FC835C /* GameOverLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameOverLayer.h; sourceTree = "<group>"; };
+		3A610A9216B4EC8600FC835C /* GameOverLayer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GameOverLayer.mm; sourceTree = "<group>"; };
 		3AC175A616B36EAA00913FAA /* ggj13.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggj13.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AC175AA16B36EAA00913FAA /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		3AC175AC16B36EAA00913FAA /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -819,6 +822,8 @@
 		3AC175BC16B36EAA00913FAA /* ggj13 */ = {
 			isa = PBXGroup;
 			children = (
+				3A610A9116B4EC8500FC835C /* GameOverLayer.h */,
+				3A610A9216B4EC8600FC835C /* GameOverLayer.mm */,
 				3A1856FA16B4C876009070E2 /* TitleLayer.h */,
 				3A1856FB16B4C876009070E2 /* TitleLayer.mm */,
 				771F9B2A16B488AE00D82CD6 /* BoxDebugLayer-1.mm */,
@@ -1705,6 +1710,7 @@
 				3AC177D216B36EAD00913FAA /* GLES-Render.mm in Sources */,
 				3AC177D516B36EAD00913FAA /* PhysicsSprite.mm in Sources */,
 				3A1856FC16B4C876009070E2 /* TitleLayer.mm in Sources */,
+				3A610A9316B4EC8700FC835C /* GameOverLayer.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

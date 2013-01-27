@@ -8,6 +8,7 @@
 
 #import "HelloWorldLayer.h"
 #import "QueryCallback.h"
+#import "GameOverLayer.h"
 
 
 
@@ -96,10 +97,13 @@
     CCSprite *tempSprite = [CCSprite spriteWithFile:@"80block.png"];
     int imageHeight = tempSprite.contentSize.height;
     _scoreLabel.position = ccp(0 + _scoreLabel.contentSize.width/2, winSize.height - imageHeight - _scoreLabel.contentSize.height/2);
+    if (score > 100) {
+        CCScene *gameOverScene = [GameOverLayer sceneWithWon:YES];
+        [[CCDirector sharedDirector] replaceScene:gameOverScene];
+    }
 }
 - (void)setScoreLabel:(NSString *)string {
     _scoreLabel.string = string;
-    
 }
 - (void)draw
 {
@@ -289,6 +293,10 @@
     }
     CCSprite *block = [CCSprite spriteWithFile:@"80block.png"];
     CCSprite *futureBlock = [CCSprite spriteWithFile:@"80block.png"];
+    if (numItems == 0) {
+        CCScene *gameOverScene = [GameOverLayer sceneWithWon:NO];
+        [[CCDirector sharedDirector] replaceScene:gameOverScene];
+    }
     for (int i = 0; i < numItems; i++) {
         // holy shit, pissssss
         if (i == randIndex) {
