@@ -9,6 +9,7 @@
 #import "HelloWorldLayer.h"
 #import "QueryCallback.h"
 #import "GameOverLayer.h"
+#import "SimpleAudioEngine.h"
 
 
 
@@ -577,6 +578,12 @@
 - (void)ccTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	if (_mouseJoint)
 	{
+        b2Body *b = _mouseJoint->GetBodyB();
+        b2Vec2 velocity = b->GetLinearVelocity();
+        float32 speed = velocity.Normalize();
+        if (speed > 35) {
+            [[SimpleAudioEngine sharedEngine] playEffect:@"block_flick1.caf"];
+        }
 		_world->DestroyJoint(_mouseJoint);
 		_mouseJoint = NULL;
         if (isGrabbed) {
