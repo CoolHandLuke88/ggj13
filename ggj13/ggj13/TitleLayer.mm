@@ -5,12 +5,8 @@
 //  Created by Brennon Redmyer on 1/26/13.
 //  Copyright 2013 __MyCompanyName__. All rights reserved.
 //
-
 #import "TitleLayer.h"
 #import "HelloWorldLayer.h"
-
-
-
 @implementation TitleLayer
 + (CCScene *)scene {
     CCScene *scene = [CCScene node];

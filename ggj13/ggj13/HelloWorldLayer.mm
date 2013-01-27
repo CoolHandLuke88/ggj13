@@ -5,19 +5,15 @@
 //  Created by Brennon Redmyer on 1/25/13.
 //  Copyright __MyCompanyName__ 2013. All rights reserved.
 //
-
 #import "HelloWorldLayer.h"
 #import "QueryCallback.h"
 #import "GameOverLayer.h"
 #import "SimpleAudioEngine.h"
-
-
-
 @implementation HelloWorldLayer {
     BOOL isGrabbed;
     BOOL hasBeenTouched;
 }
-+ (id)scene {
++ (CCScene *)scene {
     CCScene *scene = [CCScene node];
     HelloWorldLayer *layer = [HelloWorldLayer node];
     [scene addChild:layer];
@@ -38,8 +34,6 @@
         // enable touch
         self.isTouchEnabled = YES;
         // create sprite and add it to the layer
-//        _block = [CCSprite spriteWithFile:@"block_base.png"];
-//        _block.position = ccp(100, 300);
         // create a world
         b2Vec2 gravity = b2Vec2(0.0f, -8.0f);
         _world = new b2World(gravity);
@@ -51,7 +45,6 @@
         b2FixtureDef boxShapeDef;
         boxShapeDef.shape = &groundEdge;
         // wall definitions
-    
         groundEdge.Set(b2Vec2(0, 2), b2Vec2(winSize.width/PTM_RATIO, 2));
         groundBody->CreateFixture(&boxShapeDef);
         groundEdge.Set(b2Vec2(0, 0), b2Vec2(0, winSize.height/PTM_RATIO));
@@ -60,32 +53,19 @@
         groundBody->CreateFixture(&boxShapeDef);
         groundEdge.Set(b2Vec2(winSize.width/PTM_RATIO, winSize.height/PTM_RATIO), b2Vec2(winSize.width/PTM_RATIO, 0));
         groundBody->CreateFixture(&boxShapeDef);
-//        [self addLeftBlocks];
-//        [self addRightBlocks];
         [self addTopBlocks];
         [self schedule:@selector(updateBlock:) interval:3.0f];
         [self schedule:@selector(tick:)];
-        
         //Set up sprite
         GLESDebugDraw gGLESDebugDraw;
         self.numberofBar = 32;
         self.newBar = 0;
         self->_contactListener = new MyContactListener();
         _world->SetContactListener(self->_contactListener);
-	/*
-     // --unComment Code below to check body collision/shape whatever.
-        [self addChild:[BoxDebugLayer debugLayerWithWorld:_world ptmRatio:PTM_RATIO] z:10000];
-     */
-        
 #if 1
 		// Use batch node. Faster        
         CCSpriteBatchNode *parent1 = [CCSpriteBatchNode batchNodeWithFile:@"HeartAqua.png" capacity:100];
 		heartSpriteTexture_ = [parent1 texture];
-        
-        //volumesprite
-        volumeMeterSprite = [CCSprite spriteWithFile:@"Volumebar_black.png"];
-        volumeMeterSprite.position = ccp(160, 25);
-        [self addChild:volumeMeterSprite z:2 tag:0];
 #else
         heartSpriteTexture_ = [[CCTextureCache sharedTextureCache] addImage:@"HeartAqua.png"];
 		CCNode *parent1 = [CCNode node];
@@ -93,7 +73,6 @@
         //heart
         [self addChild:parent1 z:0 tag:kTagheartParentNode];
         [self addHeartSpriteAtPosition:ccp(winSize.width/2, winSize.height/2)];
-        
      }
     return self;
 }
@@ -111,82 +90,49 @@
 - (void)setScoreLabel:(NSString *)string {
     _scoreLabel.string = string;
 }
-
--(void)incrementVolumeMeter{
-    for (int i = 0; i < 63; i++) {
-        if (self.newBar != 0) {
-            self.numberofBar = self.newBar;
-        }
-        if (self.numberofBar == 32) {
-            volumeBarSprite = [CCSprite spriteWithFile:@"Volumebar_slider.png"];
-            [self addChild:volumeBarSprite z:3 tag:3];
-        }
-        self.numberofBar = self.numberofBar +4;
-        volumeBarSprite.position = ccp(self.numberofBar, 25);
-        self.newBar = self.numberofBar;
-        
-        volumeBarSprite = [CCSprite spriteWithFile:@"Volumebar_slider.png"];
-        [self addChild:volumeBarSprite z:3 tag:3+i];
-    }
-}
-
-- (void)draw
-{
+- (void)draw {
 	//
 	// IMPORTANT:
 	// This is only for debug purposes
 	// It is recommend to disable it
 	//
 	[super draw];
-	
-	ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
-	
-	kmGLPushMatrix();
-    
-    b2Draw *debugDraw = new GLESDebugDraw(PTM_RATIO);
-    
-    debugDraw->SetFlags(GLESDebugDraw::e_shapeBit);
-    
-    _world->SetDebugDraw(debugDraw);
-    
-	_world->DrawDebugData();
-	
-	kmGLPopMatrix();
+//	ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+//	
+//	kmGLPushMatrix();
+//    
+//    b2Draw *debugDraw = new GLESDebugDraw(PTM_RATIO);
+//    
+//    debugDraw->SetFlags(GLESDebugDraw::e_shapeBit);
+//    
+//    _world->SetDebugDraw(debugDraw);
+//    
+//	_world->DrawDebugData();
+//	
+//	kmGLPopMatrix();
 }
-- (void)addHeartSpriteAtPosition:(CGPoint)p
-{
-	CCLOG(@"Add heartsprite %0.2f x %02.f",p.x,p.y);
-    
+- (void)addHeartSpriteAtPosition:(CGPoint)p {    
     //heart
     CCNode *parent1 = [self getChildByTag:kTagheartParentNode];
-	
     //heart
     PhysicsSprite *heartsSprite = [PhysicsSprite spriteWithTexture:heartSpriteTexture_];
-    
-	
     //heart
     [parent1 addChild:heartsSprite];
-	
-    
     //heart
     heartsSprite.position = ccp(p.x, p.y);
-    
     //heart
     b2BodyDef heartBodyDef;
     heartBodyDef.userData = heartsSprite;
 	heartBodyDef.type = b2_staticBody;
 	heartBodyDef.position.Set(p.x/PTM_RATIO, p.y/PTM_RATIO);
 	b2Body *heartBody = _world->CreateBody(&heartBodyDef);
-    
     //heart shapes
     //box
     b2PolygonShape heartdynamicBox;
 	heartdynamicBox.SetAsBox(.30f, .30f);//These are mid points for our 1m box
-    
     // Create circle shape
     b2CircleShape circle;
     circle.m_radius = 46.0/PTM_RATIO;
-	
     //any shape we make it
     b2PolygonShape shape;
     int num = 6;
@@ -204,7 +150,6 @@
         //top right corner
         b2Vec2(35.2f*heartsSprite.scale / PTM_RATIO, 45.0f*heartsSprite.scale / PTM_RATIO)
     };
-    
     shape.Set(verts, num);
     b2FixtureDef heartFixtureDef;
 	heartFixtureDef.shape = &circle;
@@ -212,14 +157,13 @@
 	heartFixtureDef.friction = 0.3f;
     heartFixtureDef.restitution = 0.4;
 	heartBody->CreateFixture(&heartFixtureDef);
-     heartFixture = heartBody->CreateFixture(&heartFixtureDef);
+    heartFixture = heartBody->CreateFixture(&heartFixtureDef);
     [heartsSprite setPhysicsBody:heartBody];
 }
 - (void)addTopBlocks {
     CGSize winSize = [CCDirector sharedDirector].winSize;
     CCSprite *tempSprite = [CCSprite spriteWithFile:@"80block.png"];
     int imageWidth = tempSprite.contentSize.width;
-    int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width / imageWidth;
     self.topBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
     self.topMissingArray = [[NSMutableArray alloc] init];
@@ -229,14 +173,12 @@
         _block = [CCSprite spriteWithFile:@"80block.png"];
         _block.tag = kTagParentNode;
         _block.position = CGPointMake(_block.contentSize.width * i+_block.contentSize.width * 0.5f, winSize.height - _block.contentSize.height/2);
-        
         // create block body and shape
         b2BodyDef blockBodyDef;
         blockBodyDef.type = b2_staticBody;
         blockBodyDef.position.Set(_block.position.x/PTM_RATIO, _block.position.y/PTM_RATIO);
         blockBodyDef.userData = _block;
         _body = _world->CreateBody(&blockBodyDef);
-    
         _block.userData = _body;
         // modified for box shape instead of circle (from Ray Wenderlich's tutorial series)
         b2PolygonShape box;
@@ -249,7 +191,6 @@
         _body->CreateFixture(&blockShapeDef);
         blockFixture = _body->CreateFixture(&blockShapeDef);
         [self.topBlockArray addObject:_block];
-        // [self.topMissingArray addObject:futureBlock];
         [self addChild:_block z:0];
     }
 }
@@ -257,7 +198,6 @@
     CGSize winSize = [CCDirector sharedDirector].winSize;
     CCSprite *tempSprite = [CCSprite spriteWithFile:@"80block.png"];
     int imageWidth = tempSprite.contentSize.width;
-    int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width / imageWidth;
     _leftBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
     for (int i = 0; i < numBlocks; i++) {
@@ -287,7 +227,6 @@
     CGSize winSize = [CCDirector sharedDirector].winSize;
     CCSprite *tempSprite = [CCSprite spriteWithFile:@"80block.png"];
     int imageWidth = tempSprite.contentSize.width;
-    int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width/ imageWidth;
     _rightBlockArray = [NSMutableArray arrayWithCapacity:numBlocks];
     for (int i = 0; i < numBlocks; i++) {
@@ -314,7 +253,6 @@
     }
 }
 - (void)updateBlock:(ccTime) dt {
-    CCLOG(@"array count: %d", self.topBlockArray.count);
     [self chooseBlock:dt withArray:self.topBlockArray];
 }
 - (void)chooseBlock:(ccTime)dt withArray:(NSMutableArray *)blockArray {
@@ -331,13 +269,11 @@
         [[CCDirector sharedDirector] replaceScene:gameOverScene];
     }
     for (int i = 0; i < numItems; i++) {
-        // holy shit, pissssss
         if (i == randIndex) {
             block = [blockArray objectAtIndex:i];
             b2Body* body = (b2Body *)block.userData;
             self.assignedBlockTag = -2;
-            if (body != nil)
-            {
+            if (body != nil) {
                 futureBlock.color = ccc3(100, 100, 100);
                 futureBlock.position = block.position;
                 [missingArray addObject:futureBlock];
@@ -353,22 +289,6 @@
     }
 }
 - (void)tick:(ccTime)dt {
-//     bool blockFound = false;
-//    _world->Step(dt, 10, 10);
-//    for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
-//        if (b->GetUserData() != NULL) {
-//            CCSprite *blockData = (CCSprite *)b->GetUserData();
-//            blockData.position = ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO);
-//            blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
-//            
-//            if (blockData.tag >= 3) {
-//                blockFound = true;
-//            }
-//            blockData.position = ccp(b->GetPosition().x * PTM_RATIO,
-//                                     b->GetPosition().y * PTM_RATIO);
-//            blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
-//        }
-//    }
     _world->Step(dt, 10, 10);
     for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
         if (b->GetUserData() != NULL) {
@@ -379,106 +299,17 @@
     }
     [self updateScore];
     [self checkCollision];
-//    
-//    std::vector<b2Body *>toDestroy;
-//    std::vector<MyContact>::iterator pos;
-//    for (pos=_contactListener->_contacts.begin();
-//         pos != _contactListener->_contacts.end(); ++pos) {
-//        MyContact contact = *pos;
-//        
-//        if (contact.fixtureA != nil && contact.fixtureB != nil) {
-//            NSLog(@"we made contact weeee!");
-//        }
-//        
-//        if ((contact.fixtureA == heartFixture && contact.fixtureB == blockFixture) ||
-//            (contact.fixtureA == blockFixture && contact.fixtureB == heartFixture)) {
-//            NSLog(@"Ball hit bottom!");
-//            //CCScene *gameOverScene = [GameOverLayer sceneWithWon:NO];
-//            //[[CCDirector sharedDirector] replaceScene:gameOverScene];
-//        }
-//        
-//        
-////        b2Fixture* fixtureA = heartFixture;
-////        b2Fixture* fixtureB = blockFixture;
-//        
-////        b2Body *bodyC = fixtureA->GetBody();
-////        b2Body *bodyD = fixtureB->GetBody();
-////        
-////        id userDataC = (id)bodyC->GetUserData();
-////        id userDataD = (id)bodyD->GetUserData();
-//        
-//       
-//        
-////        if([userDataC isKindOfClass:[CCSprite class] && userDataD isKindOfClass:[CCSprite class]]){
-////            CCSprite *vehicleC = (CCSprite*)userDataC;
-////            CCSprite *vehicleD = (CCSprite*)userDataD;
-////            CCSprite *tempHeartSprite = [CCSprite spriteWithFile:@"HeartAqua.png"];
-////            CCSprite *tempBlockSprite = [CCSprite spriteWithFile:@"80block.ng"];
-////            CGSize winSize = [CCDirector sharedDirector].winSize;
-////            if (vehicleD.position.x > (winSize.width + tempBlockSprite.contentSize.width/2) ||
-////                vehicleD.position.x < (0 - tempBlockSprite.contentSize.width/2) ||
-////                vehicleD.position.y > (winSize.height + tempBlockSprite.contentSize.height/2) ||
-////                (vehicleD.position.y < (0 - tempBlockSprite.contentSize.height/2)
-////                && vehicleD != 0)) {
-////                NSLog(@"Collision on Screen!!!");
-////            }
-////        
-////        }
-//        
-//
-//        b2Body *bodyA = contact.fixtureA->GetBody();
-//        b2Body *bodyB = contact.fixtureB->GetBody();
-//        if (bodyA->GetUserData() != NULL && bodyB->GetUserData() != NULL) {
-//            CCSprite *spriteA = (CCSprite *) bodyA->GetUserData();
-//            CCSprite *spriteB = (CCSprite *) bodyB->GetUserData();
-//            
-//            //Sprite A = ball, Sprite B = Block
-//            if (spriteA.tag == self.assignedBlockTag && spriteB.tag == -1) {
-//                if (std::find(toDestroy.begin(), toDestroy.end(), bodyA) == toDestroy.end()) {
-//                    toDestroy.push_back(bodyA);
-//                }
-//            }
-//            
-//            //Sprite A = block, Sprite B = ball
-//            else if (spriteA.tag == -1 && spriteB.tag == self.assignedBlockTag) {
-//                if (std::find(toDestroy.begin(), toDestroy.end(), bodyB) == toDestroy.end()) {
-//                    toDestroy.push_back(bodyB);
-//                }
-//            }
-//        }
-//    }
-//    
-//    std::vector<b2Body *>::iterator pos2;
-//    for (pos2 = toDestroy.begin(); pos2 != toDestroy.end(); ++pos2) {
-//        b2Body *body = *pos2;
-//        if (body->GetUserData() != NULL) {
-//            CCSprite *sprite = (CCSprite *) body->GetUserData();
-//            [self removeChild:sprite cleanup:YES];
-//        }
-//        _world->DestroyBody(body);
-//    }
-//    
-//    if (!blockFound) {
-//        // CCScene *gameOverScene = [GameOverLayer sceneWithWon:YES];
-//        //[[CCDirector sharedDirector] replaceScene:gameOverScene];
-//    }
-//    
-//    if (toDestroy.size() > 0) {
-//        //[[SimpleAudioEngine sharedEngine] playEffect:@"blip.caf"];
-//    }
 }
 - (void)checkCollision {
     int index = -1;
     for (CCSprite *block in self.topMissingArray) {
         CGRect rect = block.boundingBox;
         self.snapPoint = block.position;
-        /* block.color = ccc3(100, 100, 100); */
         if (self.grabbedBody != nil) {
             CCSprite *grabbedBlockSprite = (CCSprite*)self.grabbedBody->GetUserData();
             CGRect rect2 = grabbedBlockSprite.boundingBox;
             if (CGRectIntersectsRect(rect, rect2) && hasBeenTouched) {
                 hasBeenTouched = NO;
-                CCLOG(@"HIT FLING!!!");
                 self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
                 self.grabbedBody->SetType(b2_staticBody);
                 block.userData = self.grabbedBody;
@@ -490,102 +321,63 @@
     }
     [self deleteObjects:index];
 }
-- (void)ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
 	UITouch* myTouch = [touches anyObject];
 	CGPoint location = [myTouch locationInView: [myTouch view]];
 	location = [[CCDirector sharedDirector] convertToGL:location];
 	location = [self convertToNodeSpace:location];
-    
 	_mouseWorld.Set(ptm(location.x), ptm(location.y));
-	if (_mouseJoint != NULL)
-	{
+	if (_mouseJoint != NULL) {
 		return;
 	}
-    
 	b2AABB aabb;
 	b2Vec2 d = b2Vec2(0.001f, 0.001f);
 	aabb.lowerBound = _mouseWorld - d;
 	aabb.upperBound = _mouseWorld + d;
-    
 	// Query the world for overlapping shapes.
 	QueryCallback callback(_mouseWorld);
 	_world->QueryAABB(&callback, aabb);
-    
-	if (callback.m_fixture)
-	{
+	if (callback.m_fixture) {
         isGrabbed = YES;
         hasBeenTouched = YES;
-        CCLOG(@"isGrabbed = %d", isGrabbed);
 		b2BodyDef bodyDef;
 		b2Body* groundBody = _world->CreateBody(&bodyDef);
-        
 		b2Body* bodyz = callback.m_fixture->GetBody();
         self.grabbedBody = bodyz;
-        CCLOG(@"Grabbed body!");
 		bodyz->SetAwake(true);
-        
 		b2MouseJointDef md;
 		md.bodyA = groundBody;
 		md.bodyB = bodyz;
 		md.target = _mouseWorld;
 		md.maxForce = 1000.0f * bodyz->GetMass();
-        
 		_mouseJoint = (b2MouseJoint*)_world->CreateJoint(&md);
 	}
 }
-- (void)ccTouchesMoved:(NSSet*)touches withEvent:(UIEvent*)event
-{
+- (void)ccTouchesMoved:(NSSet*)touches withEvent:(UIEvent*)event {
 	UITouch* myTouch = [touches anyObject];
 	CGPoint location = [myTouch locationInView: [myTouch view]];
 	location = [[CCDirector sharedDirector] convertToGL:location];
 	location = [self convertToNodeSpace:location];
-    int index = -1;
 	_mouseWorld.Set(ptm(location.x), ptm(location.y));
-    
 	if (_mouseJoint)
 	{
 		_mouseJoint->SetTarget(_mouseWorld);
 	}
-//    for (CCSprite *block in self.topMissingArray) {
-//        CGRect rect = block.boundingBox;
-//        if (CGRectContainsPoint(rect, location)) {
-//            CCLOG(@"HIT!!!");
-//            self.snapPoint = block.position;
-//            /* block.color = ccc3(100, 100, 100); */
-//            CCSprite *grabbedBlockSprite = (CCSprite*)self.grabbedBody->GetUserData();
-//            CGRect rect2 = grabbedBlockSprite.boundingBox;
-//            if (CGRectIntersectsRect(rect, rect2) && hasBeenTouched) {
-//                hasBeenTouched = NO;
-//                self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
-//                self.grabbedBody->SetType(b2_staticBody);
-//                block.userData = self.grabbedBody;
-//                [self.topBlockArray addObject:block];
-//                index = [self.topMissingArray indexOfObject:block];
-//                score += 10;
-//            }
-//        }
-//    }
-//    [self deleteObjects:index];
 }
 - (void)deleteObjects:(int)index {
     if (index != -1) {
         [self.topMissingArray removeObjectAtIndex:index];
-        CCLOG(@"topmissingarray count: %d", self.topMissingArray.count);
     }
 }
-- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     UITouch* myTouch = [touches anyObject];
 	CGPoint location = [myTouch locationInView: [myTouch view]];
 	location = [[CCDirector sharedDirector] convertToGL:location];
 	location = [self convertToNodeSpace:location];
 	[self ccTouchesCancelled:touches withEvent:event];
-    
 }
 - (void)ccTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-	if (_mouseJoint)
-	{
+	if (_mouseJoint) {
         b2Body *b = _mouseJoint->GetBodyB();
         b2Vec2 velocity = b->GetLinearVelocity();
         float32 speed = velocity.Normalize();
@@ -597,22 +389,6 @@
         if (isGrabbed) {
             isGrabbed = NO;
         }
-        //CCLOG(@"%@", self.grabbedBody->GetUserData());
-        CCLOG(@"Released body!");
-        CCLOG(@"isGrabbed: %d", isGrabbed);
 	}
 }
-//- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-//    // switch bodydef to dynamic and back
-////    CCLOG(@"Touch!!");
-////    for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
-////        if (b->GetType() == b2_dynamicBody) {
-////            CCLOG(@"Bodies dynamic, going static...");
-////            b->SetType(b2_staticBody);
-////        } else {
-////            CCLOG(@"Bodies static, going dynamic...");
-////            b->SetType(b2_dynamicBody);
-////        }
-////    }
-//}
 @end
