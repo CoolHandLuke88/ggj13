@@ -13,6 +13,7 @@
 
 @implementation HelloWorldLayer {
     BOOL isGrabbed;
+    BOOL hasBeenTouched;
 }
 + (id)scene {
     CCScene *scene = [CCScene node];
@@ -23,6 +24,7 @@
 - (id)init {
     self = [super init];
     if (self) {
+        [[CCDirector sharedDirector] setDisplayStats:NO];
         // mousejoin nil
         _mouseJoint = nil;
         // enable touch
@@ -83,9 +85,7 @@
      }
     return self;
 }
-
-
--(void) draw
+- (void)draw
 {
 	//
 	// IMPORTANT:
@@ -108,8 +108,7 @@
 	
 	kmGLPopMatrix();
 }
-
--(void)addHeartSpriteAtPosition:(CGPoint)p
+- (void)addHeartSpriteAtPosition:(CGPoint)p
 {
 	CCLOG(@"Add heartsprite %0.2f x %02.f",p.x,p.y);
     
@@ -166,9 +165,6 @@
 	heartBody->CreateFixture(&heartFixtureDef);
     [heartsSprite setPhysicsBody:heartBody];
 }
-
-
-
 - (void)addTopBlocks {
     CGSize winSize = [CCDirector sharedDirector].winSize;
     CCSprite *tempSprite = [CCSprite spriteWithFile:@"block_base.png"];
@@ -287,6 +283,7 @@
                 futureBlock.color = ccc3(100, 100, 100);
                 futureBlock.position = block.position;
                 [missingArray addObject:futureBlock];
+                CCLOG(@"topmissing count: %d", missingArray.count);
                 [self addChild:futureBlock z:-1];
                 body->SetType(b2_dynamicBody);
                 [blockArray removeObject:block];
@@ -304,6 +301,29 @@
             blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
         }
     }
+    [self checkCollision];
+}
+- (void)checkCollision {
+    int index = -1;
+    for (CCSprite *block in self.topMissingArray) {
+        CGRect rect = block.boundingBox;
+        self.snapPoint = block.position;
+        /* block.color = ccc3(100, 100, 100); */
+        if (self.grabbedBody != nil) {
+            CCSprite *grabbedBlockSprite = (CCSprite*)self.grabbedBody->GetUserData();
+            CGRect rect2 = grabbedBlockSprite.boundingBox;
+            if (CGRectIntersectsRect(rect, rect2) && hasBeenTouched) {
+                hasBeenTouched = NO;
+                CCLOG(@"HIT FLING!!!");
+                self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
+                self.grabbedBody->SetType(b2_staticBody);
+                block.userData = self.grabbedBody;
+                [self.topBlockArray addObject:block];
+                index = [self.topMissingArray indexOfObject:block];
+            }
+        }
+    }
+    [self deleteObjects:index];
 }
 - (void)ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
@@ -330,6 +350,7 @@
 	if (callback.m_fixture)
 	{
         isGrabbed = YES;
+        hasBeenTouched = YES;
         CCLOG(@"isGrabbed = %d", isGrabbed);
 		b2BodyDef bodyDef;
 		b2Body* groundBody = _world->CreateBody(&bodyDef);
@@ -354,28 +375,37 @@
 	CGPoint location = [myTouch locationInView: [myTouch view]];
 	location = [[CCDirector sharedDirector] convertToGL:location];
 	location = [self convertToNodeSpace:location];
-    
+    int index = -1;
 	_mouseWorld.Set(ptm(location.x), ptm(location.y));
     
 	if (_mouseJoint)
 	{
 		_mouseJoint->SetTarget(_mouseWorld);
 	}
-    // hover over ghost image
-    // CCSprite *futureBlock = [CCSprite spriteWithFile:@"block_base.png"];
     for (CCSprite *block in self.topMissingArray) {
-        CGRect rect = CGRectMake(block.position.x, block.position.y, block.contentSize.width, block.contentSize.height);
-        // CGPoint newPoint = [sprite convertToNodeSpace:oldPoint];
+        CGRect rect = block.boundingBox;
         if (CGRectContainsPoint(rect, location)) {
             CCLOG(@"HIT!!!");
             self.snapPoint = block.position;
-            // reimplement color highlighting later
-            /* block.color = ccc3(255, 255, 255); */
-        } else {
-            // CCLOG(@"NOPE!!!");
-            // self.snapPoint = CGPointZero;
             /* block.color = ccc3(100, 100, 100); */
+            CCSprite *grabbedBlockSprite = (CCSprite*)self.grabbedBody->GetUserData();
+            CGRect rect2 = grabbedBlockSprite.boundingBox;
+            if (CGRectIntersectsRect(rect, rect2) && hasBeenTouched) {
+                hasBeenTouched = NO;
+                self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
+                self.grabbedBody->SetType(b2_staticBody);
+                block.userData = self.grabbedBody;
+                [self.topBlockArray addObject:block];
+                index = [self.topMissingArray indexOfObject:block];
+            }
         }
+    }
+    [self deleteObjects:index];
+}
+- (void)deleteObjects:(int)index {
+    if (index != -1) {
+        [self.topMissingArray removeObjectAtIndex:index];
+        CCLOG(@"topmissingarray count: %d", self.topMissingArray.count);
     }
 }
 - (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
@@ -384,22 +414,8 @@
 	CGPoint location = [myTouch locationInView: [myTouch view]];
 	location = [[CCDirector sharedDirector] convertToGL:location];
 	location = [self convertToNodeSpace:location];
-    
 	[self ccTouchesCancelled:touches withEvent:event];
-    for (CCSprite *block in self.topMissingArray) {
-        CGRect rect = CGRectMake(block.position.x, block.position.y, block.contentSize.width, block.contentSize.height);
-        if (CGRectContainsPoint(rect, location)) {
-            CCLOG(@"HIT!!!");
-            self.snapPoint = block.position;
-            /* block.color = ccc3(100, 100, 100); */
-            if (!isGrabbed) {
-                self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
-                self.grabbedBody->SetType(b2_staticBody);
-                block.userData = self.grabbedBody;
-                [self.topBlockArray addObject:block];
-            }
-        }
-    }
+    
 }
 - (void)ccTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	if (_mouseJoint)
@@ -409,6 +425,7 @@
         if (isGrabbed) {
             isGrabbed = NO;
         }
+        //CCLOG(@"%@", self.grabbedBody->GetUserData());
         CCLOG(@"Released body!");
         CCLOG(@"isGrabbed: %d", isGrabbed);
 	}
