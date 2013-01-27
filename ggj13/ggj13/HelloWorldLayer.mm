@@ -44,7 +44,7 @@
         b2FixtureDef boxShapeDef;
         boxShapeDef.shape = &groundEdge;
         // wall definitions
-        groundEdge.Set(b2Vec2(0,0), b2Vec2(winSize.width/PTM_RATIO, 0));
+        groundEdge.Set(b2Vec2(0, 2), b2Vec2(winSize.width/PTM_RATIO, 2));
         groundBody->CreateFixture(&boxShapeDef);
         groundEdge.Set(b2Vec2(0, 0), b2Vec2(0, winSize.height/PTM_RATIO));
         groundBody->CreateFixture(&boxShapeDef);
@@ -167,7 +167,7 @@
 }
 - (void)addTopBlocks {
     CGSize winSize = [CCDirector sharedDirector].winSize;
-    CCSprite *tempSprite = [CCSprite spriteWithFile:@"block_base.png"];
+    CCSprite *tempSprite = [CCSprite spriteWithFile:@"80block.png"];
     int imageWidth = tempSprite.contentSize.width;
     int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width / imageWidth;
@@ -176,7 +176,7 @@
     for (int i = 0; i < numBlocks; i++) {
         _body = nil;
         _block = nil;
-        _block = [CCSprite spriteWithFile:@"block_base.png"];
+        _block = [CCSprite spriteWithFile:@"80block.png"];
         _block.position = CGPointMake(_block.contentSize.width * i+_block.contentSize.width * 0.5f, winSize.height - _block.contentSize.height/2);
         
         // create block body and shape
@@ -188,7 +188,7 @@
         _block.userData = _body;
         // modified for box shape instead of circle (from Ray Wenderlich's tutorial series)
         b2PolygonShape box;
-        box.SetAsBox(16/PTM_RATIO, 16/PTM_RATIO);
+        box.SetAsBox(19/PTM_RATIO, 19/PTM_RATIO);
         b2FixtureDef blockShapeDef;
         blockShapeDef.shape = &box;
         blockShapeDef.density = 1.0f;
@@ -202,7 +202,7 @@
 }
 - (void)addLeftBlocks {
     CGSize winSize = [CCDirector sharedDirector].winSize;
-    CCSprite *tempSprite = [CCSprite spriteWithFile:@"block_base.png"];
+    CCSprite *tempSprite = [CCSprite spriteWithFile:@"80block.png"];
     int imageWidth = tempSprite.contentSize.width;
     int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width / imageWidth;
@@ -210,7 +210,7 @@
     for (int i = 0; i < numBlocks; i++) {
         _body = nil;
         _block = nil;
-        _block = [CCSprite spriteWithFile:@"block_base.png"];
+        _block = [CCSprite spriteWithFile:@"80block.png"];
         _block.position = CGPointMake(imageWidth/2, (winSize.height - _block.contentSize.height - (_block.contentSize.height * i+_block.contentSize.height * 0.5f)));
         // create block body and shape
         b2BodyDef blockBodyDef;
@@ -232,7 +232,7 @@
 }
 - (void)addRightBlocks {
     CGSize winSize = [CCDirector sharedDirector].winSize;
-    CCSprite *tempSprite = [CCSprite spriteWithFile:@"block_base.png"];
+    CCSprite *tempSprite = [CCSprite spriteWithFile:@"80block.png"];
     int imageWidth = tempSprite.contentSize.width;
     int imageHeight = tempSprite.contentSize.height;
     int numBlocks = winSize.width/ imageWidth;
@@ -240,7 +240,7 @@
     for (int i = 0; i < numBlocks; i++) {
         _body = nil;
         _block = nil;
-        _block = [CCSprite spriteWithFile:@"block_base.png"];
+        _block = [CCSprite spriteWithFile:@"80block.png"];
         _block.position = CGPointMake(winSize.width - imageWidth/2, (winSize.height - _block.contentSize.height - (_block.contentSize.height * i+_block.contentSize.height * 0.5f)));
         // create block body and shape
         b2BodyDef blockBodyDef;
@@ -271,8 +271,8 @@
     if (blockArray == self.topBlockArray) {
         missingArray = self.topMissingArray;
     }
-    CCSprite *block = [CCSprite spriteWithFile:@"block_base.png"];
-    CCSprite *futureBlock = [CCSprite spriteWithFile:@"block_base.png"];
+    CCSprite *block = [CCSprite spriteWithFile:@"80block.png"];
+    CCSprite *futureBlock = [CCSprite spriteWithFile:@"80block.png"];
     for (int i = 0; i < numItems; i++) {
         // holy shit, pissssss
         if (i == randIndex) {
