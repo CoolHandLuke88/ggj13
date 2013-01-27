@@ -50,6 +50,7 @@
         b2FixtureDef boxShapeDef;
         boxShapeDef.shape = &groundEdge;
         // wall definitions
+    
         groundEdge.Set(b2Vec2(0, 2), b2Vec2(winSize.width/PTM_RATIO, 2));
         groundBody->CreateFixture(&boxShapeDef);
         groundEdge.Set(b2Vec2(0, 0), b2Vec2(0, winSize.height/PTM_RATIO));
@@ -333,6 +334,7 @@
         if (i == randIndex) {
             block = [blockArray objectAtIndex:i];
             b2Body* body = (b2Body *)block.userData;
+            self.assignedBlockTag = -2;
             if (body != nil)
             {
                 futureBlock.color = ccc3(100, 100, 100);
@@ -427,7 +429,7 @@
             }
             
             //Sprite A = block, Sprite B = ball
-            else if (spriteA.tag == kTagParentNode && spriteB.tag == kTagheartParentNode) {
+            else if (spriteA.tag == -1 && spriteB.tag == self.assignedBlockTag) {
                 if (std::find(toDestroy.begin(), toDestroy.end(), bodyB) == toDestroy.end()) {
                     toDestroy.push_back(bodyB);
                 }
