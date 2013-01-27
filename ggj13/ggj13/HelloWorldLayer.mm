@@ -461,26 +461,26 @@
 }
 - (void)checkCollision {
     int index = -1;
-    for (CCSprite *block in self.topMissingArray) {
-        CGRect rect = block.boundingBox;
-        self.snapPoint = block.position;
-        /* block.color = ccc3(100, 100, 100); */
-        if (self.grabbedBody != nil) {
-            CCSprite *grabbedBlockSprite = (CCSprite*)self.grabbedBody->GetUserData();
-            CGRect rect2 = grabbedBlockSprite.boundingBox;
-            if (CGRectIntersectsRect(rect, rect2) && hasBeenTouched) {
-                hasBeenTouched = NO;
-                CCLOG(@"HIT FLING!!!");
-                self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
-                self.grabbedBody->SetType(b2_staticBody);
-                block.userData = self.grabbedBody;
-                [self.topBlockArray addObject:block];
-                index = [self.topMissingArray indexOfObject:block];
-                score += 10;
-            }
-        }
-    }
-    [self deleteObjects:index];
+//    for (CCSprite *block in self.topMissingArray) {
+//        CGRect rect = block.boundingBox;
+//        self.snapPoint = block.position;
+//        /* block.color = ccc3(100, 100, 100); */
+//        if (self.grabbedBody != nil) {
+//            CCSprite *grabbedBlockSprite = (CCSprite*)self.grabbedBody->GetUserData();
+//            CGRect rect2 = grabbedBlockSprite.boundingBox;
+//            if (CGRectIntersectsRect(rect, rect2) && hasBeenTouched) {
+//                hasBeenTouched = NO;
+//                CCLOG(@"HIT FLING!!!");
+//                self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
+//                self.grabbedBody->SetType(b2_staticBody);
+//                block.userData = self.grabbedBody;
+//                [self.topBlockArray addObject:block];
+//                index = [self.topMissingArray indexOfObject:block];
+//                score += 10;
+//            }
+//        }
+//    }
+    // [self deleteObjects:index];
 }
 - (void)ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
@@ -539,26 +539,26 @@
 	{
 		_mouseJoint->SetTarget(_mouseWorld);
 	}
-    for (CCSprite *block in self.topMissingArray) {
-        CGRect rect = block.boundingBox;
-        if (CGRectContainsPoint(rect, location)) {
-            CCLOG(@"HIT!!!");
-            self.snapPoint = block.position;
-            /* block.color = ccc3(100, 100, 100); */
-            CCSprite *grabbedBlockSprite = (CCSprite*)self.grabbedBody->GetUserData();
-            CGRect rect2 = grabbedBlockSprite.boundingBox;
-            if (CGRectIntersectsRect(rect, rect2) && hasBeenTouched) {
-                hasBeenTouched = NO;
-                self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
-                self.grabbedBody->SetType(b2_staticBody);
-                block.userData = self.grabbedBody;
-                [self.topBlockArray addObject:block];
-                index = [self.topMissingArray indexOfObject:block];
-                score += 10;
-            }
-        }
-    }
-    [self deleteObjects:index];
+//    for (CCSprite *block in self.topMissingArray) {
+//        CGRect rect = block.boundingBox;
+//        if (CGRectContainsPoint(rect, location)) {
+//            CCLOG(@"HIT!!!");
+//            self.snapPoint = block.position;
+//            /* block.color = ccc3(100, 100, 100); */
+//            CCSprite *grabbedBlockSprite = (CCSprite*)self.grabbedBody->GetUserData();
+//            CGRect rect2 = grabbedBlockSprite.boundingBox;
+//            if (CGRectIntersectsRect(rect, rect2) && hasBeenTouched) {
+//                hasBeenTouched = NO;
+//                self.grabbedBody->SetTransform(b2Vec2(block.position.x/PTM_RATIO, block.position.y/PTM_RATIO), 0);
+//                self.grabbedBody->SetType(b2_staticBody);
+//                block.userData = self.grabbedBody;
+//                [self.topBlockArray addObject:block];
+//                index = [self.topMissingArray indexOfObject:block];
+//                score += 10;
+//            }
+//        }
+//    }
+//    [self deleteObjects:index];
 }
 - (void)deleteObjects:(int)index {
     if (index != -1) {
