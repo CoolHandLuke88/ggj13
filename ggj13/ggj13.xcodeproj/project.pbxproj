@@ -244,6 +244,8 @@
 		771F9B2616B4877900D82CD6 /* HeartRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 771F9AD116B4877900D82CD6 /* HeartRed.png */; };
 		771F9B2716B4877900D82CD6 /* Volumebar_black.png in Resources */ = {isa = PBXBuildFile; fileRef = 771F9AD216B4877900D82CD6 /* Volumebar_black.png */; };
 		771F9B2816B4877900D82CD6 /* Volumebar_slider.png in Resources */ = {isa = PBXBuildFile; fileRef = 771F9AD316B4877900D82CD6 /* Volumebar_slider.png */; };
+		776AC10316B9667B007A3F78 /* ContactListener.mm in Sources */ = {isa = PBXBuildFile; fileRef = 776AC10216B9667B007A3F78 /* ContactListener.mm */; };
+		776AC10916B9682C007A3F78 /* 80block.png in Resources */ = {isa = PBXBuildFile; fileRef = 776AC10816B9682C007A3F78 /* 80block.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -691,6 +693,9 @@
 		771F9AD316B4877900D82CD6 /* Volumebar_slider.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Volumebar_slider.png; sourceTree = "<group>"; };
 		771F9B2A16B488AE00D82CD6 /* BoxDebugLayer-1.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = "BoxDebugLayer-1.mm"; sourceTree = "<group>"; };
 		771F9B2B16B488AE00D82CD6 /* BoxDebugLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoxDebugLayer.h; sourceTree = "<group>"; };
+		776AC0FF16B96637007A3F78 /* ContactListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContactListener.h; sourceTree = "<group>"; };
+		776AC10216B9667B007A3F78 /* ContactListener.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ContactListener.mm; sourceTree = "<group>"; };
+		776AC10816B9682C007A3F78 /* 80block.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 80block.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -818,6 +823,8 @@
 				3AC177D116B36EAD00913FAA /* GLES-Render.mm */,
 				3AC177D316B36EAD00913FAA /* PhysicsSprite.h */,
 				3AC177D416B36EAD00913FAA /* PhysicsSprite.mm */,
+				776AC0FF16B96637007A3F78 /* ContactListener.h */,
+				776AC10216B9667B007A3F78 /* ContactListener.mm */,
 				3AC175BD16B36EAA00913FAA /* Resources */,
 				3AC177C316B36EAD00913FAA /* Supporting Files */,
 			);
@@ -828,6 +835,7 @@
 			isa = PBXGroup;
 			children = (
 				3A610AD216B564E100FC835C /* Icons */,
+				776AC10816B9682C007A3F78 /* 80block.png */,
 				3A610AAB16B560E900FC835C /* block-corner-hd.png */,
 				3A610AAC16B560E900FC835C /* block-corner-tru.png */,
 				3A610AAD16B560E900FC835C /* block-corner.png */,
@@ -1578,6 +1586,7 @@
 				3A610AFF16B571DF00FC835C /* icon-Small.png in Resources */,
 				3A610B0016B571DF00FC835C /* icon-Small@2x.png in Resources */,
 				3A610B0116B571DF00FC835C /* icon.png in Resources */,
+				776AC10916B9682C007A3F78 /* 80block.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1597,6 +1606,7 @@
 				3A1856FC16B4C876009070E2 /* TitleLayer.mm in Sources */,
 				3A610A9316B4EC8700FC835C /* GameOverLayer.mm in Sources */,
 				7707E8EF16B4F47C00D45D99 /* MyContactListener.mm in Sources */,
+				776AC10316B9667B007A3F78 /* ContactListener.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

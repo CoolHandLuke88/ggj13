@@ -70,8 +70,10 @@
         GLESDebugDraw gGLESDebugDraw;
         self.numberofBar = 32;
         self.newBar = 0;
-        self->_contactListener = new MyContactListener();
-        _world->SetContactListener(self->_contactListener);
+        //self->_contactListener = new MyContactListener();
+        //_world->SetContactListener(self->_contactListener);
+        self->contactListener = new ContactListener();
+        _world->SetContactListener(self->contactListener);
 	/*
      // --unComment Code below to check body collision/shape whatever.
         [self addChild:[BoxDebugLayer debugLayerWithWorld:_world ptmRatio:PTM_RATIO] z:10000];
@@ -320,11 +322,13 @@
 - (void)chooseBlock:(ccTime)dt withArray:(NSMutableArray *)blockArray {
     int numItems = blockArray.count;
     int randIndex = arc4random() % numItems;
+
     NSMutableArray *missingArray;
     if (blockArray == self.topBlockArray) {
         missingArray = self.topMissingArray;
     }
     CCSprite *block = [CCSprite spriteWithFile:@"80block.png"];
+    _refBlock = block;
     CCSprite *futureBlock = [CCSprite spriteWithFile:@"80block.png"];
     if (numItems == 0) {
         CCScene *gameOverScene = [GameOverLayer sceneWithWon:NO];
@@ -333,7 +337,15 @@
     for (int i = 0; i < numItems; i++) {
         // holy shit, pissssss
         if (i == randIndex) {
+            if ( i != self.lastIndex) {
+                NSLog(@"randIndex => %i", randIndex);
+                NSLog(@"lastIndex => %i", self.lastIndex);
+                self.lastIndex = randIndex;
+            
             block = [blockArray objectAtIndex:i];
+            if (block == NULL) {
+                NSLog(@"block is null");
+            }
             b2Body* body = (b2Body *)block.userData;
             self.assignedBlockTag = -2;
             if (body != nil)
@@ -343,32 +355,19 @@
                 [missingArray addObject:futureBlock];
                 CCLOG(@"topmissing count: %d", missingArray.count);
                 [self addChild:futureBlock z:-1];
+                NSLog(@"The set Tag is currently => %i", i);
                 block.tag = i;
                 self.assignedBlockTag = i;
+            
                 body->SetType(b2_dynamicBody);
                 [blockArray removeObject:block];
                 break;
+            }
             }
         }
     }
 }
 - (void)tick:(ccTime)dt {
-//     bool blockFound = false;
-//    _world->Step(dt, 10, 10);
-//    for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
-//        if (b->GetUserData() != NULL) {
-//            CCSprite *blockData = (CCSprite *)b->GetUserData();
-//            blockData.position = ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO);
-//            blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
-//            
-//            if (blockData.tag >= 3) {
-//                blockFound = true;
-//            }
-//            blockData.position = ccp(b->GetPosition().x * PTM_RATIO,
-//                                     b->GetPosition().y * PTM_RATIO);
-//            blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
-//        }
-//    }
     _world->Step(dt, 10, 10);
     for (b2Body *b = _world->GetBodyList(); b; b=b->GetNext()) {
         if (b->GetUserData() != NULL) {
@@ -377,96 +376,81 @@
             blockData.rotation = -1 * CC_RADIANS_TO_DEGREES(b->GetAngle());
         }
     }
+    
+    
+        std::vector<b2Body *>toDestroy;
+        std::vector<MyContact>::iterator pos;
+        for (pos=contactListener->_contacts.begin();
+             pos != contactListener->_contacts.end(); ++pos) {
+            MyContact contact = *pos;
+    
+            b2Body *bodyA = contact.fixtureA->GetBody();
+            b2Body *bodyB = contact.fixtureB->GetBody();
+            if (bodyA->GetUserData() != NULL && bodyB->GetUserData() != NULL) {
+                CCSprite *spriteA = (CCSprite *) bodyA->GetUserData();
+                CCSprite *spriteB = (CCSprite *) bodyB->GetUserData();
+    
+                //Sprite A = ball, Sprite B = Block
+                //NSLog(@"This is sprite A TAG BEFORE %i", spriteA.tag);
+                if (spriteA.tag == self.assignedBlockTag && spriteA && spriteB.tag == -1) {
+                    if (std::find(toDestroy.begin(), toDestroy.end(), bodyA) == toDestroy.end()) {
+                         NSLog(@"This is sprite A TAG DELETION %i", spriteA.tag);
+                        spriteA.visible = false;
+                        //sprite removal is causing the crash
+                        self.assignedBlockTag = -2;
+                        spriteA = NULL;
+                        //spriteB = NULL;
+                        [self performSelector:@selector(removeSprite:)  withObject: spriteA afterDelay:1.5];
+                        toDestroy.push_back(bodyA);
+                        //_world->DestroyBody(bodyA);
+               
+                    }
+                }
+    
+//                else if (spriteA.tag == -1 && spriteB.tag == self.assignedBlockTag) {
+//                    if (std::find(toDestroy.begin(), toDestroy.end(), bodyB) == toDestroy.end()) {
+//                        toDestroy.push_back(bodyB);
+//                        self.assignedBlockTag = -2;
+//                    }
+//                }
+            }
+        }
+    
+        std::vector<b2Body *>::iterator pos2;
+        for (pos2 = toDestroy.begin(); pos2 != toDestroy.end(); ++pos2) {
+            b2Body *body = *pos2;
+            if (body->GetUserData() != NULL) {
+                NSLog(@"We are deleting a body");
+                CCSprite *sprite = (CCSprite *) body->GetUserData();
+                body->SetAwake(false);
+                 _world->DestroyBody(body);
+                body = NULL;
+               // [self removeChild:sprite cleanup:YES];
+        
+            }
+            // _world->DestroyBody(body);
+    }
+            
+    
     [self updateScore];
     [self checkCollision];
-//    
-//    std::vector<b2Body *>toDestroy;
-//    std::vector<MyContact>::iterator pos;
-//    for (pos=_contactListener->_contacts.begin();
-//         pos != _contactListener->_contacts.end(); ++pos) {
-//        MyContact contact = *pos;
-//        
-//        if (contact.fixtureA != nil && contact.fixtureB != nil) {
-//            NSLog(@"we made contact weeee!");
-//        }
-//        
-//        if ((contact.fixtureA == heartFixture && contact.fixtureB == blockFixture) ||
-//            (contact.fixtureA == blockFixture && contact.fixtureB == heartFixture)) {
-//            NSLog(@"Ball hit bottom!");
-//            //CCScene *gameOverScene = [GameOverLayer sceneWithWon:NO];
-//            //[[CCDirector sharedDirector] replaceScene:gameOverScene];
-//        }
-//        
-//        
-////        b2Fixture* fixtureA = heartFixture;
-////        b2Fixture* fixtureB = blockFixture;
-//        
-////        b2Body *bodyC = fixtureA->GetBody();
-////        b2Body *bodyD = fixtureB->GetBody();
-////        
-////        id userDataC = (id)bodyC->GetUserData();
-////        id userDataD = (id)bodyD->GetUserData();
-//        
-//       
-//        
-////        if([userDataC isKindOfClass:[CCSprite class] && userDataD isKindOfClass:[CCSprite class]]){
-////            CCSprite *vehicleC = (CCSprite*)userDataC;
-////            CCSprite *vehicleD = (CCSprite*)userDataD;
-////            CCSprite *tempHeartSprite = [CCSprite spriteWithFile:@"HeartAqua.png"];
-////            CCSprite *tempBlockSprite = [CCSprite spriteWithFile:@"80block.ng"];
-////            CGSize winSize = [CCDirector sharedDirector].winSize;
-////            if (vehicleD.position.x > (winSize.width + tempBlockSprite.contentSize.width/2) ||
-////                vehicleD.position.x < (0 - tempBlockSprite.contentSize.width/2) ||
-////                vehicleD.position.y > (winSize.height + tempBlockSprite.contentSize.height/2) ||
-////                (vehicleD.position.y < (0 - tempBlockSprite.contentSize.height/2)
-////                && vehicleD != 0)) {
-////                NSLog(@"Collision on Screen!!!");
-////            }
-////        
-////        }
-//        
-//
-//        b2Body *bodyA = contact.fixtureA->GetBody();
-//        b2Body *bodyB = contact.fixtureB->GetBody();
-//        if (bodyA->GetUserData() != NULL && bodyB->GetUserData() != NULL) {
-//            CCSprite *spriteA = (CCSprite *) bodyA->GetUserData();
-//            CCSprite *spriteB = (CCSprite *) bodyB->GetUserData();
-//            
-//            //Sprite A = ball, Sprite B = Block
-//            if (spriteA.tag == self.assignedBlockTag && spriteB.tag == -1) {
-//                if (std::find(toDestroy.begin(), toDestroy.end(), bodyA) == toDestroy.end()) {
-//                    toDestroy.push_back(bodyA);
-//                }
-//            }
-//            
-//            //Sprite A = block, Sprite B = ball
-//            else if (spriteA.tag == -1 && spriteB.tag == self.assignedBlockTag) {
-//                if (std::find(toDestroy.begin(), toDestroy.end(), bodyB) == toDestroy.end()) {
-//                    toDestroy.push_back(bodyB);
-//                }
-//            }
-//        }
-//    }
-//    
-//    std::vector<b2Body *>::iterator pos2;
-//    for (pos2 = toDestroy.begin(); pos2 != toDestroy.end(); ++pos2) {
-//        b2Body *body = *pos2;
-//        if (body->GetUserData() != NULL) {
-//            CCSprite *sprite = (CCSprite *) body->GetUserData();
-//            [self removeChild:sprite cleanup:YES];
-//        }
-//        _world->DestroyBody(body);
-//    }
-//    
-//    if (!blockFound) {
-//        // CCScene *gameOverScene = [GameOverLayer sceneWithWon:YES];
-//        //[[CCDirector sharedDirector] replaceScene:gameOverScene];
-//    }
-//    
-//    if (toDestroy.size() > 0) {
-//        //[[SimpleAudioEngine sharedEngine] playEffect:@"blip.caf"];
-//    }
+
 }
+
+-(void)removeSprite:(id)sender
+{
+    CCSprite *spr = (CCSprite*)sender;
+    NSLog(@"spr tag is %i", spr.tag);
+    refSpr = spr;
+    spr.tag = -2;
+    [spr removeAllChildrenWithCleanup:YES];
+    [spr removeFromParentAndCleanup:YES];
+    //spr = NULL;
+        
+    //    printf("Removed ice block\n");
+}
+
+
 - (void)checkCollision {
     int index = -1;
     for (CCSprite *block in self.topMissingArray) {
@@ -521,6 +505,9 @@
 		b2Body* groundBody = _world->CreateBody(&bodyDef);
         
 		b2Body* bodyz = callback.m_fixture->GetBody();
+        _touchedBody = bodyz;
+        CCSprite *spriteA = (CCSprite *) bodyz->GetUserData();
+        spriteA.tag = -2;
         self.grabbedBody = bodyz;
         CCLOG(@"Grabbed body!");
 		bodyz->SetAwake(true);
@@ -576,6 +563,11 @@
 }
 - (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
+//    b2Body *b = _mouseJoint->GetBodyB();
+//    CCSprite *spriteA = (CCSprite *) b->GetUserData();
+//    spriteA.tag = -2;
+ 
+  
     UITouch* myTouch = [touches anyObject];
 	CGPoint location = [myTouch locationInView: [myTouch view]];
 	location = [[CCDirector sharedDirector] convertToGL:location];
@@ -584,11 +576,17 @@
     
 }
 - (void)ccTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-	if (_mouseJoint)
+	     
+    if (_mouseJoint)
 	{
         b2Body *b = _mouseJoint->GetBodyB();
         b2Vec2 velocity = b->GetLinearVelocity();
         float32 speed = velocity.Normalize();
+
+   
+        
+        CCSprite *spriteA = (CCSprite *) b->GetUserData();
+        spriteA.tag = -2;
         if (speed > 35) {
             [[SimpleAudioEngine sharedEngine] playEffect:@"block_flick1.caf"];
         }
@@ -597,6 +595,7 @@
         if (isGrabbed) {
             isGrabbed = NO;
         }
+        
         //CCLOG(@"%@", self.grabbedBody->GetUserData());
         CCLOG(@"Released body!");
         CCLOG(@"isGrabbed: %d", isGrabbed);

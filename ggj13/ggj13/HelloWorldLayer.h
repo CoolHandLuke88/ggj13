@@ -12,14 +12,15 @@
 #import "BoxDebugLayer.h"
 #import "GLES-Render.h"
 #import "PhysicsSprite.h"
-#import "MyContactListener.h"
+//#import "MyContactListener.h"
+#import "ContactListener.h"
 
 #define PTM_RATIO 32.0
 #define ptm(__x__) (__x__/PTM_RATIO)
 
 enum {
-	kTagParentNode = 1,
-    kTagheartParentNode = 2,
+	kTagParentNode = -14,
+    kTagheartParentNode = -15,
 };
 
 @interface HelloWorldLayer : CCLayer {
@@ -28,17 +29,21 @@ enum {
     NSMutableArray *_leftBlockArray;
     b2World *_world;
     b2Body *_body;
+    b2Body *_touchedBody;
     CCSprite *_block;
+    CCSprite *_refBlock;
     b2Vec2 _mouseWorld;
     b2MouseJoint *_mouseJoint;
     //added code for hearty heart and volumeeeeeeee...
     CCTexture2D *heartSpriteTexture_;	// weak ref
     CCSprite *volumeMeterSprite;
     CCSprite *volumeBarSprite;
+    CCSprite *refSpr;
     CCLabelTTF *_scoreLabel;
     b2Fixture *heartFixture;
     b2Fixture *blockFixture;
-    MyContactListener *_contactListener;
+   // MyContactListener *_contactListener;
+    ContactListener *contactListener;
     int score;
 }
 @property (strong, nonatomic) NSMutableArray *topBlockArray;
@@ -49,6 +54,8 @@ enum {
 @property (assign, nonatomic) int newBar;
 @property (assign, nonatomic)  b2FixtureDef blockShapeDef;
 @property (assign, nonatomic) NSInteger assignedBlockTag;
+@property (assign, nonatomic) BOOL canDeleteBlock;
+@property (assign, nonatomic) int lastIndex;
 -(void) addHeartSpriteAtPosition:(CGPoint)p;
 + (id)scene;
 @end

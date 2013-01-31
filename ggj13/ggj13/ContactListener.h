@@ -2,15 +2,36 @@
 //  ContactListener.h
 //  ggj13
 //
-//  Created by Luke McDonald on 1/27/13.
+//  Created by Luke McDonald on 1/30/13.
 //  Copyright 2013 __MyCompanyName__. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import "cocos2d.h"
+#import "Box2D.h"
+#import <vector>
+#import <algorithm>
 
-@interface ContactListener : CCSprite {
+struct MyContact {
+    b2Fixture *fixtureA;
+    b2Fixture *fixtureB;
+    bool operator==(const MyContact& other) const
+    {
+        return (fixtureA == other.fixtureA) && (fixtureB == other.fixtureB);
+    }
+};
+
+class ContactListener : public b2ContactListener
+{
+  
+public:
+    std::vector<MyContact>_contacts;
     
-}
+    ContactListener();
+    ~ContactListener();
 
-@end
+    virtual void BeginContact(b2Contact *contact);
+    virtual void EndContact(b2Contact *contact);
+    virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold);
+    virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse);
+};
