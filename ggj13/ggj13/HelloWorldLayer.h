@@ -21,6 +21,7 @@
 enum {
 	kTagParentNode = -14,
     kTagheartParentNode = -15,
+    kTagBlockParentNode = -16
 };
 
 @interface HelloWorldLayer : CCLayer {
@@ -29,6 +30,8 @@ enum {
     NSMutableArray *_leftBlockArray;
     b2World *_world;
     b2Body *_body;
+    b2Body *_refBody;
+
     b2Body *_touchedBody;
     CCSprite *_block;
     CCSprite *_refBlock;
@@ -36,6 +39,7 @@ enum {
     b2MouseJoint *_mouseJoint;
     //added code for hearty heart and volumeeeeeeee...
     CCTexture2D *heartSpriteTexture_;	// weak ref
+    CCTexture2D *blockSpriteTexture_;
     CCSprite *volumeMeterSprite;
     CCSprite *volumeBarSprite;
     CCSprite *refSpr;
@@ -43,6 +47,7 @@ enum {
     b2Fixture *heartFixture;
     b2Fixture *blockFixture;
    // MyContactListener *_contactListener;
+    PhysicsSprite *blockSprite;
     ContactListener *contactListener;
     int score;
 }

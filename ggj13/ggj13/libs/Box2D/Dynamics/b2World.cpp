@@ -340,8 +340,10 @@ void b2World::DestroyJoint(b2Joint* j)
 
 	j->m_edgeB.prev = NULL;
 	j->m_edgeB.next = NULL;
+    if (j != NULL) {
+        	b2Joint::Destroy(j, &m_blockAllocator);
+    }
 
-	b2Joint::Destroy(j, &m_blockAllocator);
 
 	b2Assert(m_jointCount > 0);
 	--m_jointCount;
